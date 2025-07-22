@@ -7,40 +7,87 @@
   <link rel="stylesheet" href="src/style.css" />
   <script src="src/logic/hash-basic.js"></script>
   <script src="src/logic/similarity.js"></script>
+  <style>
+    body {
+      font-family: 'Cairo', sans-serif;
+      background: #111;
+      color: #fff;
+      text-align: center;
+      padding: 2rem;
+    }
+    h1 {
+      font-size: 2.5rem;
+      color: #ff8800;
+      margin-bottom: 1rem;
+    }
+    .card {
+      background: #222;
+      border: 1px solid #444;
+      border-radius: 10px;
+      padding: 1rem;
+      margin: 1rem auto;
+      width: 80%;
+      max-width: 400px;
+      box-shadow: 0 0 10px #000;
+    }
+    input, button {
+      margin-top: 0.5rem;
+      padding: 0.6rem;
+      font-size: 1rem;
+      width: 100%;
+      border-radius: 6px;
+      border: none;
+    }
+    button {
+      background: #ff8800;
+      color: #fff;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #e06900;
+    }
+    #resultMessage {
+      font-size: 1.2rem;
+      margin-top: 1rem;
+    }
+    progress {
+      width: 100%;
+      height: 16px;
+      margin-top: 0.5rem;
+    }
+  </style>
 </head>
-<body class="intro" style="text-align:center; padding:2rem; background:#000; color:#fff; font-family:'Cairo', sans-serif;">
+<body>
 
   <h1>🕵️‍♂️ RKEEB</h1>
-  <p>نظام بصري للتحقق من أصالة العملات والمستندات</p>
+  <p>نظام بصري للتحقق عبر التصوير المباشر</p>
 
-  <button onclick="document.getElementById('verifyZone').style.display='block'; this.style.display='none';">
-    🔍 دخول النظام
-  </button>
+  <div class="card">
+    <h3>📸 تصوير صورة الأصل بالكاميرا</h3>
+    <input type="file" accept="image/*" capture="environment" id="originalCamera">
+  </div>
 
-  <div id="verifyZone" style="margin-top:2rem; display:none;">
-    <h2>🔬 تحليل ومقارنة الصور</h2>
+  <div class="card">
+    <h3>🖼️ تصوير صورة للتحقق بالكاميرا</h3>
+    <input type="file" accept="image/*" capture="environment" id="checkCamera">
+  </div>
 
-    <label>📸 صورة الأصل</label><br>
-    <input type="file" id="originalImage" accept="image/*"><br><br>
-
-    <label>🖼️ صورة للتحقق</label><br>
-    <input type="file" id="checkImage" accept="image/*"><br><br>
-
-    <button onclick="compareImages()">تحليل الصورة</button>
-
-    <div id="resultMessage" style="margin-top:1rem; font-size:1.2rem;"></div>
-    <progress id="matchProgress" value="0" max="100" style="width:80%; margin-top:0.5rem;"></progress>
+  <div class="card">
+    <h3>🔍 تحليل الصور</h3>
+    <button onclick="analyzeCameraImages()">تحليل مباشر</button>
+    <div id="resultMessage"></div>
+    <progress id="matchProgress" value="0" max="100"></progress>
   </div>
 
   <script>
-    async function compareImages() {
-      const original = document.getElementById('originalImage').files[0];
-      const check = document.getElementById('checkImage').files[0];
+    async function analyzeCameraImages() {
+      const original = document.getElementById('originalCamera').files[0];
+      const check = document.getElementById('checkCamera').files[0];
       const result = document.getElementById('resultMessage');
       const progress = document.getElementById('matchProgress');
 
       if (!original || !check) {
-        result.innerText = "⚠️ يرجى رفع الصورتين";
+        result.innerText = "⚠️ يرجى التصوير في كلا الحالتين قبل التحليل";
         return;
       }
 
