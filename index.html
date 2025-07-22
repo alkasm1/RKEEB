@@ -2,7 +2,7 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8" />
-  <title>RKEEB | كشف التزوير بالكاميرا</title>
+  <title>RKEEB | التحقق بالصور والكميرا</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="src/style.css" />
   <script src="src/logic/hash-basic.js"></script>
@@ -16,9 +16,8 @@
       padding: 2rem;
     }
     h1 {
-      font-size: 2.5rem;
+      font-size: 2.2rem;
       color: #ff8800;
-      margin-bottom: 1rem;
     }
     .card {
       background: #222;
@@ -26,14 +25,14 @@
       border-radius: 10px;
       padding: 1rem;
       margin: 1rem auto;
-      width: 80%;
-      max-width: 400px;
+      width: 90%;
+      max-width: 440px;
       box-shadow: 0 0 10px #000;
     }
     button {
-      margin-top: 0.6rem;
+      margin-top: 0.5rem;
       padding: 0.8rem;
-      font-size: 1.1rem;
+      font-size: 1rem;
       width: 100%;
       border-radius: 8px;
       border: none;
@@ -44,52 +43,67 @@
     button:hover {
       background: #e06900;
     }
+    input[type="file"] {
+      display: none;
+    }
     progress {
       width: 100%;
       height: 16px;
-      margin-top: 0.5rem;
+      margin-top: 1rem;
     }
     #resultMessage {
       font-size: 1.2rem;
       margin-top: 1rem;
-    }
-    input[type="file"] {
-      display: none;
     }
   </style>
 </head>
 <body>
 
   <h1>🕵️‍♂️ RKEEB</h1>
-  <p>نظام تحقق بصري عبر التصوير المباشر</p>
+  <p>نظام تحقق بصري عبر الملفات أو التصوير المباشر</p>
 
   <div class="card">
-    <label for="originalCameraBtn">📷 تصوير صورة الأصل</label>
+    <h3>📂 صورة الأصل من الجهاز</h3>
+    <input type="file" accept="image/*" id="originalFileInput">
+    <button onclick="document.getElementById('originalFileInput').click()">📂 اختيار صورة الأصل من الملفات</button>
+  </div>
+
+  <div class="card">
+    <h3>📷 تصوير صورة الأصل بالكاميرا</h3>
     <input type="file" accept="image/*" capture="environment" id="originalCameraInput">
-    <button id="originalCameraBtn" onclick="document.getElementById('originalCameraInput').click()">📷 فتح الكاميرا للأصل</button>
+    <button onclick="document.getElementById('originalCameraInput').click()">📷 فتح الكاميرا للأصل</button>
   </div>
 
   <div class="card">
-    <label for="checkCameraBtn">📷 تصوير صورة للتحقق</label>
+    <h3>📂 صورة للتحقق من الجهاز</h3>
+    <input type="file" accept="image/*" id="checkFileInput">
+    <button onclick="document.getElementById('checkFileInput').click()">📂 اختيار صورة للتحقق من الملفات</button>
+  </div>
+
+  <div class="card">
+    <h3>📷 تصوير صورة للتحقق بالكاميرا</h3>
     <input type="file" accept="image/*" capture="environment" id="checkCameraInput">
-    <button id="checkCameraBtn" onclick="document.getElementById('checkCameraInput').click()">📷 فتح الكاميرا للتحقق</button>
+    <button onclick="document.getElementById('checkCameraInput').click()">📷 فتح الكاميرا للتحقق</button>
   </div>
 
   <div class="card">
-    <button onclick="analyzeCameraImages()">🔍 تحليل الصور</button>
+    <button onclick="analyzeImages()">🔍 تحليل الصور</button>
     <div id="resultMessage"></div>
     <progress id="matchProgress" value="0" max="100"></progress>
   </div>
 
   <script>
-    async function analyzeCameraImages() {
-      const original = document.getElementById('originalCameraInput').files[0];
-      const check = document.getElementById('checkCameraInput').files[0];
+    async function analyzeImages() {
+      const original = document.getElementById('originalCameraInput').files[0]
+        || document.getElementById('originalFileInput').files[0];
+      const check = document.getElementById('checkCameraInput').files[0]
+        || document.getElementById('checkFileInput').files[0];
+
       const result = document.getElementById('resultMessage');
       const progress = document.getElementById('matchProgress');
 
       if (!original || !check) {
-        result.innerText = "⚠️ يرجى التصوير في الحالتين أولاً";
+        result.innerText = "⚠️ يرجى رفع أو تصوير الصورتين أولاً";
         return;
       }
 
