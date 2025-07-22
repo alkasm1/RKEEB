@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>RKEEB | تحليل الصور</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/src/style.css">
+  <script src="/src/logic/hash.js"></script>
+  <script src="/src/logic/similarity.js"></script>
+</head>
+<body class="verify">
+  <h2>🔬 تحليل ومقارنة الصور</h2>
+
+  <label>📸 صورة الأصل</label><br>
+  <input type="file" id="originalImage" accept="image/*"><br>
+
+  <label>🖼️ صورة للتحقق</label><br>
+  <input type="file" id="checkImage" accept="image/*"><br><br>
+
+  <button onclick="compareImages()">تحليل الصورة</button>
+
+  <div id="resultMessage"></div>
+  <progress id="matchProgress" value="0" max="100"></progress>
+
+  <script>
+    async function compareImages() {
+      const original = document.getElementById('originalImage').files[0];
+      const check = document.getElementById('checkImage').files[0];
+      const result = document.getElementById('resultMessage');
+      const progress = document.getElementById('matchProgress');
+
+      if (!original || !check) {
+        result.innerText = "⚠️ يرجى رفع الصورتين";
+        return;
+      }
+
+      const hash1 = await calculateHash(original);
+      const hash2 = await calculateHash(check);
+      const percent = calculateSimilarity(hash1, hash2);
+
+      progress.value = percent;
+      if (percent >= 90) result.innerText = `✅ تطابق ${percent}% - الأصل مؤكد`;
+      else if (percent >= 70) result.innerText = `⚠️ تطابق ${percent}% - تحقق يدوي`;
+      else result.innerText = `❌ تطابق ${percent}% - محتمل تزوير`;
+    }
+  </script>
+</body>
+</html>
