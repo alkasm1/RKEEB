@@ -2,7 +2,7 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8" />
-  <title>RKEEB | تحقق بالكاميرا أو الملفات</title>
+  <title>RKEEB | التحقق بالكاميرا أو الملفات</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="src/style.css" />
   <script src="src/logic/hash-basic.js"></script>
@@ -67,19 +67,21 @@
 <body>
 
   <h1>🕵️‍♂️ RKEEB</h1>
-  <p>تحقق من الصور باستخدام الكاميرا أو الملفات</p>
+  <p>تحقق بصري دقيق باستخدام الكاميرا أو الملفات</p>
 
   <div class="card">
-    <h3>📷 تصوير صورة الأصل بالكاميرا</h3>
+    <h3>📷 تصوير الأصل</h3>
     <input type="file" accept="image/*" capture="environment" id="originalCamera">
-    <h3>📂 اختيار صورة الأصل من الجهاز</h3>
+    
+    <h3>📂 اختيار الأصل من الجهاز</h3>
     <input type="file" accept="image/*" id="originalFile">
   </div>
 
   <div class="card">
-    <h3>📷 تصوير صورة للتحقق بالكاميرا</h3>
+    <h3>📷 تصوير للتحقق</h3>
     <input type="file" accept="image/*" capture="environment" id="checkCamera">
-    <h3>📂 اختيار صورة للتحقق من الجهاز</h3>
+    
+    <h3>📂 اختيار للتحقق من الجهاز</h3>
     <input type="file" accept="image/*" id="checkFile">
   </div>
 
@@ -90,12 +92,17 @@
   </div>
 
   <script>
-    // تنبيهات التصوير
     document.getElementById('originalCamera').addEventListener('change', () => {
-      alert("✅ تم تصوير صورة الأصل");
+      alert("✅ تم تصوير الأصل");
     });
     document.getElementById('checkCamera').addEventListener('change', () => {
-      alert("✅ تم تصوير صورة للتحقق");
+      alert("✅ تم تصوير للتحقق");
+    });
+    document.getElementById('originalFile').addEventListener('change', () => {
+      alert("📂 تم اختيار صورة الأصل من الجهاز");
+    });
+    document.getElementById('checkFile').addEventListener('change', () => {
+      alert("📂 تم اختيار صورة للتحقق من الجهاز");
     });
 
     async function analyzeImages() {
@@ -108,10 +115,11 @@
       const progress = document.getElementById('matchProgress');
 
       if (!original || !check) {
-        result.innerText = "⚠️ يرجى التصوير أو رفع الصورتين أولاً";
+        result.innerText = "⚠️ يرجى رفع أو تصوير الصورتين أولاً";
         return;
       }
 
+      result.innerText = "⏳ جاري التحليل...";
       const hash1 = await calculateHash(original);
       const hash2 = await calculateHash(check);
       const percent = calculateSimilarity(hash1, hash2);
