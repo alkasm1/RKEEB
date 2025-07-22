@@ -2,107 +2,109 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8" />
-  <title>RKEEB | التحقق بالكاميرا أو الملفات</title>
+  <title>RKEEB | تحقق بصري ذكي</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="src/style.css" />
   <script src="src/logic/hash-basic.js"></script>
   <script src="src/logic/similarity.js"></script>
   <style>
     body {
-      background: #111;
-      color: #fff;
+      background: #0b0b0b;
+      color: #ff8800;
       font-family: 'Cairo', sans-serif;
-      text-align: center;
+      margin: 0;
       padding: 2rem;
+      text-align: center;
     }
     h1 {
-      font-size: 2.2rem;
-      color: #ff8800;
+      font-size: 3rem;
+      margin-bottom: 0.5rem;
+    }
+    p {
+      font-size: 1.2rem;
+      margin-bottom: 2rem;
+    }
+    .welcome, .verify {
+      max-width: 500px;
+      margin: auto;
     }
     .card {
-      background: #222;
-      border: 1px solid #444;
-      border-radius: 10px;
+      background: #1c1c1c;
+      border-radius: 12px;
       padding: 1rem;
-      margin: 1rem auto;
-      width: 90%;
-      max-width: 440px;
+      margin-bottom: 1.5rem;
       box-shadow: 0 0 10px #000;
     }
-    input[type="file"] {
+    input[type="file"], button {
       margin-top: 0.5rem;
-      padding: 0.6rem;
+      padding: 0.8rem;
       font-size: 1rem;
       width: 100%;
-      background: #ff8800;
-      color: #fff;
       border-radius: 8px;
       border: none;
       cursor: pointer;
     }
-    progress {
+    input[type="file"] {
+      background: #333;
+      color: #fff;
+    }
+    button {
+      background: #ff8800;
+      color: #fff;
+    }
+    button:hover {
+      background: #e06900;
+    }
+    #matchProgress {
       width: 100%;
-      height: 16px;
+      height: 18px;
       margin-top: 1rem;
     }
     #resultMessage {
       font-size: 1.2rem;
       margin-top: 1rem;
-    }
-    button {
-      background: #ff8800;
       color: #fff;
-      border: none;
-      padding: 0.8rem;
-      font-size: 1rem;
-      border-radius: 8px;
-      cursor: pointer;
-      margin-top: 0.5rem;
-    }
-    button:hover {
-      background: #e06900;
     }
   </style>
 </head>
 <body>
 
-  <h1>🕵️‍♂️ RKEEB</h1>
-  <p>تحقق بصري دقيق باستخدام الكاميرا أو الملفات</p>
-
-  <div class="card">
-    <h3>📷 تصوير الأصل</h3>
-    <input type="file" accept="image/*" capture="environment" id="originalCamera">
-    
-    <h3>📂 اختيار الأصل من الجهاز</h3>
-    <input type="file" accept="image/*" id="originalFile">
+  <div class="welcome">
+    <h1>🛡️ RKEEB</h1>
+    <p>منصة تحقق ذكية عبر الكاميرا أو الملفات</p>
+    <button onclick="document.getElementById('verifyZone').style.display='block'; this.style.display='none';">
+      بدء التحقق 🔍
+    </button>
   </div>
 
-  <div class="card">
-    <h3>📷 تصوير للتحقق</h3>
-    <input type="file" accept="image/*" capture="environment" id="checkCamera">
-    
-    <h3>📂 اختيار للتحقق من الجهاز</h3>
-    <input type="file" accept="image/*" id="checkFile">
-  </div>
+  <div id="verifyZone" class="verify" style="display:none; margin-top:2rem;">
+    <div class="card">
+      <h3>📷 تصوير الأصل بالكاميرا</h3>
+      <input type="file" accept="image/*" capture="environment" id="originalCamera">
+      <h3>📁 اختيار الأصل من الجهاز</h3>
+      <input type="file" accept="image/*" id="originalFile">
+    </div>
 
-  <div class="card">
-    <button onclick="analyzeImages()">🔍 تحليل الصور</button>
-    <div id="resultMessage"></div>
-    <progress id="matchProgress" value="0" max="100"></progress>
+    <div class="card">
+      <h3>📷 تصوير للتحقق بالكاميرا</h3>
+      <input type="file" accept="image/*" capture="environment" id="checkCamera">
+      <h3>📁 اختيار للتحقق من الجهاز</h3>
+      <input type="file" accept="image/*" id="checkFile">
+    </div>
+
+    <div class="card">
+      <button onclick="analyzeImages()">تحليل الصور</button>
+      <div id="resultMessage"></div>
+      <progress id="matchProgress" value="0" max="100"></progress>
+    </div>
   </div>
 
   <script>
-    document.getElementById('originalCamera').addEventListener('change', () => {
-      alert("✅ تم تصوير الأصل");
-    });
-    document.getElementById('checkCamera').addEventListener('change', () => {
-      alert("✅ تم تصوير للتحقق");
-    });
-    document.getElementById('originalFile').addEventListener('change', () => {
-      alert("📂 تم اختيار صورة الأصل من الجهاز");
-    });
-    document.getElementById('checkFile').addEventListener('change', () => {
-      alert("📂 تم اختيار صورة للتحقق من الجهاز");
+    // تنبيهات اختيار الصور
+    ['originalCamera','originalFile','checkCamera','checkFile'].forEach(id => {
+      document.getElementById(id).addEventListener('change', () => {
+        alert("✅ تم اختيار الصورة من: " + (id.includes("Camera") ? "الكاميرا" : "الجهاز"));
+      });
     });
 
     async function analyzeImages() {
@@ -115,7 +117,7 @@
       const progress = document.getElementById('matchProgress');
 
       if (!original || !check) {
-        result.innerText = "⚠️ يرجى رفع أو تصوير الصورتين أولاً";
+        result.innerText = "⚠️ يرجى اختيار أو تصوير الصورتين أولًا";
         return;
       }
 
