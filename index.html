@@ -35,7 +35,7 @@
       margin-bottom: 1.5rem;
       box-shadow: 0 0 10px #000;
     }
-    input[type="file"], button {
+    input[type="file"] {
       margin-top: 0.5rem;
       padding: 0.8rem;
       font-size: 1rem;
@@ -43,14 +43,18 @@
       border-radius: 8px;
       border: none;
       cursor: pointer;
-    }
-    input[type="file"] {
-      background: #333;
+      background: #28a745;
       color: #fff;
     }
     button {
       background: #ff8800;
       color: #fff;
+      border: none;
+      padding: 0.8rem;
+      font-size: 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      width: 100%;
     }
     button:hover {
       background: #e06900;
@@ -100,7 +104,6 @@
   </div>
 
   <script>
-    // تنبيهات اختيار الصور
     ['originalCamera','originalFile','checkCamera','checkFile'].forEach(id => {
       document.getElementById(id).addEventListener('change', () => {
         alert("✅ تم اختيار الصورة من: " + (id.includes("Camera") ? "الكاميرا" : "الجهاز"));
