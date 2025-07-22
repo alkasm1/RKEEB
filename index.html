@@ -2,210 +2,56 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8" />
-  <title>Keynova Lock</title>
-
-  <link rel="manifest" href="manifest.json" />
-  <link rel="icon" href="icon.png" type="image/png" />
-  <meta name="theme-color" content="#ff8800" />
-
-  <script>
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("sw.js");
-    }
-  </script>
-
-  <style>
-    body {
-      font-family: 'Tajawal', Arial, sans-serif;
-      background-color: #000;
-      color: #fff;
-      padding: 20px;
-      text-align: center;
-    }
-    input[type="file"], button, select {
-      margin-top: 10px;
-      padding: 10px;
-      font-size: 1em;
-      border-radius: 6px;
-    }
-    button {
-      background: #ff8800;
-      color: #fff;
-      border: none;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #e67600;
-    }
-    select {
-      background: #2c2c2c;
-      color: #fff;
-      border: 1px solid #666;
-    }
-    .result {
-      margin-top: 20px;
-      font-size: 1.2em;
-    }
-    .success { color: #00ff99; }
-    .warning { color: #ffaa00; }
-    .fail { color: #ff4444; }
-    #matchBar {
-      margin-top: 10px;
-      width: 80%;
-      height: 16px;
-    }
-    h1 { color: #ff8800; }
-  </style>
+  <title>RKEEB | كشف التزوير</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="src/style.css" />
+  <script src="src/logic/hash-basic.js"></script>
+  <script src="src/logic/similarity.js"></script>
 </head>
-<body>
+<body class="intro" style="text-align:center; padding:2rem; background:#000; color:#fff; font-family:'Cairo', sans-serif;">
 
-  <h1>🔐 Keynova Lock</h1>
+  <h1>🕵️‍♂️ RKEEB</h1>
+  <p>نظام بصري للتحقق من أصالة العملات والمستندات</p>
 
-  <h3>🔓 محاولة الفتح</h3>
-  <input type="file" id="verifyInput" accept="image/*" />
-  <button onclick="verifyKey()">تحقق من الصورة</button>
-  <div class="result" id="result"></div>
-  <progress id="matchBar" value="0" max="100" style="display:none;"></progress>
+  <button onclick="document.getElementById('verifyZone').style.display='block'; this.style.display='none';">
+    🔍 دخول النظام
+  </button>
 
-  <div id="securedActions" style="display:none;">
-    <h3>🔧 إعدادات Keynova</h3>
-    <button onclick="goToKeyChange()">🛠️ تغيير المفتاح</button>
-    <button onclick="goToProtection()">🗂️ حماية الملفات / التطبيقات</button>
-    <button onclick="removeKey()">🗑️ إزالة المفتاح</button>
-  </div>
+  <div id="verifyZone" style="margin-top:2rem; display:none;">
+    <h2>🔬 تحليل ومقارنة الصور</h2>
 
-  <div id="keySection" style="display:none;">
-    <h3>🖼️ تعيين صورة كمفتاح جديد</h3>
-    <input type="file" id="setKeyInput" accept="image/*" />
-    <button onclick="setKey()">حفظ المفتاح</button>
-  </div>
+    <label>📸 صورة الأصل</label><br>
+    <input type="file" id="originalImage" accept="image/*"><br><br>
 
-  <div id="protectionSection" style="display:none;">
-    <h3>🛡️ الحماية البصرية</h3>
-    <select id="protectedTarget">
-      <option value="">— اختر الهدف —</option>
-      <option value="images">📸 الصور</option>
-      <option value="docs">📄 المستندات</option>
-      <option value="apps">📱 التطبيقات</option>
-      <option value="custom">🧩 مخصص</option>
-    </select>
-    <br />
-    <button onclick="protectSelected()">🔒 تطبيق الحماية</button>
-    <button onclick="clearProtection()">🧹 إلغاء الحماية</button>
-    <div class="result" id="protectionStatus"></div>
+    <label>🖼️ صورة للتحقق</label><br>
+    <input type="file" id="checkImage" accept="image/*"><br><br>
+
+    <button onclick="compareImages()">تحليل الصورة</button>
+
+    <div id="resultMessage" style="margin-top:1rem; font-size:1.2rem;"></div>
+    <progress id="matchProgress" value="0" max="100" style="width:80%; margin-top:0.5rem;"></progress>
   </div>
 
   <script>
-    async function calculateHash(file) {
-      const buffer = await file.arrayBuffer();
-      const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    }
+    async function compareImages() {
+      const original = document.getElementById('originalImage').files[0];
+      const check = document.getElementById('checkImage').files[0];
+      const result = document.getElementById('resultMessage');
+      const progress = document.getElementById('matchProgress');
 
-    async function verifyKey() {
-      const file = document.getElementById("verifyInput").files[0];
-      if (!file) return alert("يرجى اختيار صورة للتحقق منها");
-
-      const storedHash = localStorage.getItem("keynova_hash");
-      if (!storedHash) {
-        alert("🔒 لا يوجد مفتاح محفوظ، يرجى تعيين مفتاح أولًا");
-        goToKeyChange();
+      if (!original || !check) {
+        result.innerText = "⚠️ يرجى رفع الصورتين";
         return;
       }
 
-      const currentHash = await calculateHash(file);
-      const minLength = Math.min(currentHash.length, storedHash.length);
-      let differences = 0;
-      for (let i = 0; i < minLength; i++) {
-        if (currentHash[i] !== storedHash[i]) differences++;
-      }
-      const matchPercent = Math.round(((minLength - differences) / minLength) * 100);
+      const hash1 = await calculateHash(original);
+      const hash2 = await calculateHash(check);
+      const percent = calculateSimilarity(hash1, hash2);
 
-      const resultDiv = document.getElementById("result");
-      const bar = document.getElementById("matchBar");
-      bar.value = matchPercent;
-      bar.style.display = "block";
-
-      if (matchPercent >= 90) {
-        resultDiv.innerHTML = `✅ تم التحقق بنجاح بنسبة تطابق ${matchPercent}%`;
-        resultDiv.className = "result success";
-        document.getElementById("securedActions").style.display = "block";
-      } else if (matchPercent >= 70) {
-        resultDiv.innerHTML = `⚠️ نسبة التطابق ${matchPercent}%. قد تكون الصورة غير دقيقة.`;
-        resultDiv.className = "result warning";
-      } else {
-        resultDiv.innerHTML = `❌ نسبة التطابق ${matchPercent}%. محتمل أن تكون مزيفة.`;
-        resultDiv.className = "result fail";
-      }
-
-      setTimeout(() => {
-        document.getElementById("securedActions").style.display = "none";
-        document.getElementById("keySection").style.display = "none";
-        document.getElementById("protectionSection").style.display = "none";
-        bar.style.display = "none";
-      }, 600000);
-    }
-
-    async function setKey() {
-      const file = document.getElementById("setKeyInput").files[0];
-      if (!file) return alert("يرجى اختيار صورة لتعيينها");
-
-      const confirmChange = confirm("هل أنت متأكد من تغيير المفتاح؟");
-      if (!confirmChange) return;
-
-      const hash = await calculateHash(file);
-      localStorage.setItem("keynova_hash", hash);
-      alert("✅ تم حفظ المفتاح الجديد بنجاح");
-    }
-
-    function goToKeyChange() {
-      document.getElementById("keySection").style.display = "block";
-    }
-
-    function goToProtection() {
-      document.getElementById("protectionSection").style.display = "block";
-      const storedTarget = localStorage.getItem("protected_target");
-      const statusDiv = document.getElementById("protectionStatus");
-
-      if (storedTarget) {
-        statusDiv.innerHTML = `✅ الحماية مفعّلة على: <strong>${storedTarget}</strong>`;
-        statusDiv.className = "result success";
-      } else {
-        statusDiv.innerHTML = "⚠️ لا توجد حماية حالية";
-        statusDiv.className = "result fail";
-      }
-    }
-
-    function protectSelected() {
-      const target = document.getElementById("protectedTarget").value;
-      const statusDiv = document.getElementById("protectionStatus");
-
-      if (!target) {
-        statusDiv.innerHTML = "⚠️ يرجى اختيار هدف";
-        statusDiv.className = "result fail";
-        return;
-      }
-
-      localStorage.setItem("protected_target", target);
-      statusDiv.innerHTML = `✅ تم حماية: <strong>${target}</strong>`;
-      statusDiv.className = "result success";
-    }
-
-    function clearProtection() {
-      localStorage.removeItem("protected_target");
-      const statusDiv = document.getElementById("protectionStatus");
-      statusDiv.innerHTML = "🧹 تم إلغاء الحماية";
-      statusDiv.className = "result fail";
-    }
-
-    function removeKey() {
-      const confirmDelete = confirm("هل أنت متأكد من إزالة المفتاح؟");
-      if (!confirmDelete) return;
-
-      localStorage.removeItem("keynova_hash");
-      alert("✅ تمت إزالة المفتاح");
-      document.getElementById("securedActions").style.display = "none";
+      progress.value = percent;
+      if (percent >= 90) result.innerText = `✅ تطابق ${percent}% - الأصل مؤكد`;
+      else if (percent >= 70) result.innerText = `⚠️ تطابق ${percent}% - تحقق يدوي`;
+      else result.innerText = `❌ تطابق ${percent}% - محتمل تزوير`;
     }
   </script>
 
