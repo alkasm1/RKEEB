@@ -42,10 +42,11 @@
   </style>
 </head>
 <body>
-  <h2>👁️ حدد منطقتين داخل الصورة (لمس أو سحب)</h2>
+  <h2>👁️ حدد منطقتين داخل الصورة (باللمس أو الفأرة)</h2>
   <input type="file" accept="image/*" id="imageInput" />
   <canvas id="canvas" width="600" height="400"></canvas>
   <button onclick="compareRegions()">تحليل التطابق</button>
+  <button onclick="resetCanvas()">إعادة التحديد 🔄</button>
   <div id="result">🟦⬜ بانتظار التحديد...</div>
 
   <script>
@@ -62,29 +63,33 @@
       reader.onload = () => {
         img.src = reader.result;
         img.onload = () => ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        regions = [];
       };
       reader.readAsDataURL(file);
     });
 
     function getCoords(e) {
-  const rect = canvas.getBoundingClientRect();
-  if (e.touches && e.touches.length > 0) {
-    return {
-      x: e.touches[0].clientX - rect.left,
-      y: e.touches[0].clientY - rect.top
-    };
-  } else if (e.changedTouches && e.changedTouches.length > 0) {
-    return {
-      x: e.changedTouches[0].clientX - rect.left,
-      y: e.changedTouches[0].clientY - rect.top
-    };
-  } else {
-    return {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
-    };
-  }
-}
+      const rect = canvas.getBoundingClientRect();
+      if (e.touches && e.touches.length > 0) {
+        e.preventDefault();
+        return {
+          x: e.touches[0].clientX - rect.left,
+          y: e.touches[0].clientY - rect.top
+        };
+      } else if (e.changedTouches && e.changedTouches.length > 0) {
+        e.preventDefault();
+        return {
+          x: e.changedTouches[0].clientX - rect.left,
+          y: e.changedTouches[0].clientY - rect.top
+        };
+      } else {
+        return {
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top
+        };
+      }
+    }
+
     function startDraw(e) {
       if (regions.length >= 2) return;
       drawing = true;
@@ -109,13 +114,13 @@
 
     canvas.addEventListener("mousedown", startDraw);
     canvas.addEventListener("mouseup", endDraw);
-    canvas.addEventListener("touchstart", startDraw);
-    canvas.addEventListener("touchend", endDraw);
+    canvas.addEventListener("touchstart", startDraw, { passive: false });
+    canvas.addEventListener("touchend", endDraw, { passive: false });
 
     async function compareRegions() {
       const result = document.getElementById("result");
       if (regions.length < 2) {
-        result.innerText = "⚠️ يرجى تحديد مربعين داخل الصورة أولاً";
+        result.innerText = "⚠️ يرجى تحديد مربعين أولًا";
         return;
       }
       const hashA = await getRegionHash(regions[0]);
@@ -147,6 +152,13 @@
         if (hashA[i] === hashB[i]) match++;
       }
       return Math.floor((match / hashA.length) * 100);
+    }
+
+    function resetCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      regions = [];
+      document.getElementById("result").innerText = "🟦⬜ بانتظار التحديد...";
     }
   </script>
 </body>
