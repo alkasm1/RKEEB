@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8" />
+  <title>RKEEB | تحديد مناطق للتحقق</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      background: #0b0b0b;
+      color: #ff8800;
+      font-family: 'Cairo', sans-serif;
+      text-align: center;
+      padding: 2rem;
+    }
+    canvas {
+      border: 2px solid #ff8800;
+      margin: 1rem auto;
+      display: block;
+      max-width: 100%;
+    }
+    input, button {
+      padding: 0.8rem;
+      margin-top: 1rem;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+    }
+    input[type="file"] {
+      background: #28a745;
+      color: #fff;
+    }
+    button {
+      background: #ff8800;
+      color: #fff;
+    }
+    #result {
+      margin-top: 1rem;
+      font-size: 1.2rem;
+    }
+  </style>
+</head>
+<body>
+  <h2>👁️ حدد منطقتين داخل الصورة للتحقق البصري</h2>
+  <input type="file" accept="image/*" id="imageInput" />
+  <canvas id="canvas" width="600" height="400"></canvas>
+  <button onclick="compareRegions()">تحليل التطابق</button>
+  <div id="result">🟦⬜ بانتظار التحديد...</div>
+
+  <script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    let img = new Image();
+    let regions = [];
+    let drawing = false;
+    let startX, startY;
+
+    document.getElementById("imageInput").addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = () => {
+        img.src = reader.result;
+        img.onload = () => ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      };
+      reader.readAsDataURL(file);
+    });
+
+    canvas.addEventListener("mousedown", (e) => {
+      if (regions.length >= 2) return;
+      drawing = true;
+      startX = e.offsetX;
+      startY = e.offsetY;
+    });
+
+    canvas.addEventListener("mouseup", (e) => {
+      if (!drawing) return;
+      drawing = false;
+      const endX = e.offsetX;
+      const endY = e.offsetY;
+      const x = Math.min(startX, endX);
+      const y = Math.min(startY, endY);
+      const w = Math.abs(endX - startX);
+      const h = Math.abs(endY - startY);
+      regions.push({ x, y, w, h });
+      ctx.strokeStyle = regions.length === 1 ? "#00ff00" : "#ff0000";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x, y, w, h);
+    });
+
+    async function compareRegions() {
+      const result = document.getElementById("result");
+      if (regions.length < 2) {
+        result.innerText = "⚠️ يرجى تحديد مربعين داخل الصورة أولاً";
+        return;
+      }
+
+      const hashA = await getRegionHash(regions[0]);
+      const hashB = await getRegionHash(regions[1]);
+
+      const percent = compareHashes(hashA, hashB);
+      result.innerText = `📊 نسبة التطابق بين المنطقتين: ${percent}%`;
+    }
+
+    function getRegionHash(region) {
+      return new Promise((resolve) => {
+        const temp = document.createElement("canvas");
+        temp.width = region.w;
+        temp.height = region.h;
+        const tctx = temp.getContext("2d");
+        tctx.drawImage(canvas, region.x, region.y, region.w, region.h, 0, 0, region.w, region.h);
+        temp.toBlob(async (blob) => {
+          const arrayBuffer = await blob.arrayBuffer();
+          const hashBuffer = await crypto.subtle.digest("SHA-256", arrayBuffer);
+          const hashArray = Array.from(new Uint8Array(hashBuffer));
+          const hex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+          resolve(hex);
+        });
+      });
+    }
+
+    function compareHashes(hashA, hashB) {
+      let match = 0;
+      for (let i = 0; i < hashA.length; i++) {
+        if (hashA[i] === hashB[i]) match++;
+      }
+      return Math.floor((match / hashA.length) * 100);
+    }
+  </script>
+</body>
+</html>
