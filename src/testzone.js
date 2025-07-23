@@ -1,81 +1,78 @@
-import React, { useState } from "react";
-import { getImageHash } from "../utils/hash"; // تأكد من مسار الاستيراد حسب مجلدك
+// دالة تحليل صورة واحدة تحتوي الأصل والمُشتبه فيه
+async function analyzeSingleImage(file) {
+  const result = document.getElementById('resultMessage');
+  const progress = document.getElementById('matchProgress');
 
-const TestZone = () => {
-  const [matchPercent, setMatchPercent] = useState(null);
-  const [feedbackColor, setFeedbackColor] = useState("gray");
-  const [message, setMessage] = useState("");
+  if (!file) {
+    result.innerText = "⚠️ يرجى اختيار صورة تحتوي الأصل والمُشتبه به معًا";
+    return;
+  }
 
-  const calculateSimilarity = (hash1, hash2) => {
-    const minLength = Math.min(hash1.length, hash2.length);
-    let differences = 0;
+  result.innerText = "⏳ جاري التحليل...";
 
-    for (let i = 0; i < minLength; i++) {
-      if (hash1[i] !== hash2[i]) differences++;
-    }
+  const hashLeft = await calculateHalfHash(file, 'left');
+  const hashRight = await calculateHalfHash(file, 'right');
+  const percent = calculateSimilarity(hashLeft, hashRight);
 
-    const percent = ((minLength - differences) / minLength) * 100;
-    return Math.round(percent);
-  };
+  progress.value = percent;
+  if (percent >= 90) result.innerText = `✅ تطابق ${percent}% - مطابق تمامًا`;
+  else if (percent >= 70) result.innerText = `⚠️ تطابق ${percent}% - تحقق يدوي`;
+  else result.innerText = `❌ تطابق ${percent}% - محتمل تزوير`;
+}
 
-  const handleVerify = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+// دالة لاقتطاع وتحليل نصف الصورة (يسار أو يمين)
+async function calculateHalfHash(file, side = 'left') {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
 
-    const inputHash = await getImageHash(file);
-    const storedHash = localStorage.getItem("keynova_hash");
+    reader.onload = () => {
+      const img = new Image();
+      img.src = reader.result;
 
-    if (!storedHash) {
-      setMessage("⚠️ لا يوجد مفتاح مخزن. الرجاء حفظ مفتاح أولًا.");
-      setFeedbackColor("gray");
-      setMatchPercent(null);
-      return;
-    }
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
 
-    const percent = calculateSimilarity(storedHash, inputHash);
-    setMatchPercent(percent);
-    console.log("نسبة التطابق:", percent); // للاختبار في Console
+        const halfWidth = img.width / 2;
+        const height = img.height;
 
-    if (percent >= 90) {
-      setMessage(`✅ تم التحقق بنجاح بنسبة تطابق ${percent}%`);
-      setFeedbackColor("green");
-    } else if (percent >= 70) {
-      setMessage(`⚠️ نسبة التطابق ${percent}%. قد تكون الصورة غير دقيقة.`);
-      setFeedbackColor("orange");
-    } else {
-      setMessage(`❌ نسبة التطابق ${percent}%. محتمل أن تكون مزيفة.`);
-      setFeedbackColor("red");
-    }
-  };
+        canvas.width = 300;
+        canvas.height = 300;
 
-  return (
-    <div style={{ padding: "1rem", textAlign: "center" }}>
-      <h2>منطقة اختبار الصورة</h2>
-      <input type="file" accept="image/*" onChange={handleVerify} />
-      {matchPercent !== null && (
-        <div style={{ marginTop: "1rem" }}>
-          <p
-            style={{
-              color: feedbackColor,
-              fontWeight: "bold",
-              fontSize: "1.2rem",
-              marginBottom: "0.5rem",
-            }}
-          >
-            {message}
-          </p>
-          <p style={{ fontSize: "1rem", color: feedbackColor }}>
-            نسبة التطابق: {matchPercent}%
-          </p>
-          <progress
-            value={matchPercent}
-            max={100}
-            style={{ width: "80%", height: "16px" }}
-          />
-        </div>
-      )}
-    </div>
-  );
-};
+        const sx = side === 'left' ? 0 : halfWidth;
+        ctx.drawImage(img, sx, 0, halfWidth, height, 0, 0, 300, 300);
 
-export default TestZone;
+        // معالجة رمادية لتوحيد اللون وتقليل التشويش
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+        for (let i = 0; i < data.length; i += 4) {
+          const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+          data[i] = data[i + 1] = data[i + 2] = avg;
+        }
+        ctx.putImageData(imageData, 0, 0);
+
+        canvas.toBlob(async (blob) => {
+          const arrayBuffer = await blob.arrayBuffer();
+          const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer);
+          const hashArray = Array.from(new Uint8Array(hashBuffer));
+          const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+          resolve(hashHex);
+        }, 'image/png');
+      };
+
+      img.onerror = reject;
+    };
+
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+// دالة حساب نسبة التشابه بين التجزئتين
+function calculateSimilarity(hashA, hashB) {
+  let match = 0;
+  for (let i = 0; i < hashA.length; i++) {
+    if (hashA[i] === hashB[i]) match++;
+  }
+  return Math.floor((match / hashA.length) * 100);
+}
