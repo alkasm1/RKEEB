@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8" />
+  <title>RKEEB | تحقق مباشر بالكاميرا</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      background: #0b0b0b;
+      color: #ff8800;
+      font-family: 'Cairo', sans-serif;
+      text-align: center;
+      padding: 2rem;
+    }
+    video {
+      width: 100%;
+      max-width: 500px;
+      border: 2px solid #ff8800;
+      position: relative;
+    }
+    .overlay {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 500px;
+      height: auto;
+      pointer-events: none;
+    }
+    .box {
+      position: absolute;
+      border: 2px solid;
+      width: 100px;
+      height: 100px;
+    }
+    .box.left {
+      top: 80px;
+      left: 50px;
+      border-color: #00ff00;
+    }
+    .box.right {
+      top: 80px;
+      right: 50px;
+      border-color: #ff0000;
+    }
+    button {
+      margin-top: 1rem;
+      padding: 0.8rem;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: none;
+      background: #ff8800;
+      color: #fff;
+      cursor: pointer;
+    }
+    #result {
+      margin-top: 1rem;
+      font-size: 1.2rem;
+    }
+    #canvas {
+      display: none;
+    }
+    .container {
+      position: relative;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+  <h2>🎯 تحقق مباشر عبر الكاميرا</h2>
+  <div class="container">
+    <video id="video" autoplay></video>
+    <div class="overlay">
+      <div class="box left"></div>
+      <div class="box right"></div>
+    </div>
+  </div>
+  <button onclick="captureAndCompare()">📸 تحقق مباشر</button>
+  <div id="result">🟦⬜ بانتظار التصوير...</div>
+  <canvas id="canvas" width="500" height="400"></canvas>
+
+  <script>
+    const video = document.getElementById("video");
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+
+    navigator.mediaDevices.getUserMedia({
+      video: { facingMode: "environment" },
+      audio: false
+    }).then(stream => {
+      video.srcObject = stream;
+    }).catch(err => {
+      alert("🚫 فشل تشغيل الكاميرا: " + err.message);
+    });
+
+    async function captureAndCompare() {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      const leftBox = { x: 50, y: 80, w: 100, h: 100 };
+      const rightBox = { x: canvas.width - 150, y: 80, w: 100, h: 100 };
+
+      const hashA = await getRegionHash(leftBox);
+      const hashB = await getRegionHash(rightBox);
+
+      const percent = compareHashes(hashA, hashB);
+      document.getElementById("result").innerText = `📊 نسبة التطابق: ${percent}%`;
+    }
+
+    function getRegionHash(region) {
+      return new Promise((resolve) => {
+        const temp = document.createElement("canvas");
+        temp.width = region.w;
+        temp.height = region.h;
+        const tctx = temp.getContext("2d");
+        tctx.drawImage(canvas, region.x, region.y, region.w, region.h, 0, 0, region.w, region.h);
+        temp.toBlob(async (blob) => {
+          const arrayBuffer = await blob.arrayBuffer();
+          const hashBuffer = await crypto.subtle.digest("SHA-256", arrayBuffer);
+          const hashArray = Array.from(new Uint8Array(hashBuffer));
+          const hex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+          resolve(hex);
+        });
+      });
+    }
+
+    function compareHashes(hashA, hashB) {
+      let match = 0;
+      for (let i = 0; i < hashA.length; i++) {
+        if (hashA[i] === hashB[i]) match++;
+      }
+      return Math.floor((match / hashA.length) * 100);
+    }
+  </script>
+</body>
+</html>
