@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8" />
+  <title>تحليل نسيج منطقتين | RKEEB</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      background: #0b0b0b;
+      color: #ff8800;
+      font-family: 'Cairo', sans-serif;
+      text-align: center;
+      padding: 2rem;
+    }
+    canvas {
+      border: 2px solid #ff8800;
+      margin: 1rem auto;
+      display: block;
+      max-width: 100%;
+    }
+    input, button {
+      padding: 0.8rem;
+      margin-top: 1rem;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+    }
+    input[type="file"] {
+      background: #28a745;
+      color: #fff;
+    }
+    button {
+      background: #ff8800;
+      color: #fff;
+    }
+    #result {
+      margin-top: 1rem;
+      font-size: 1.2rem;
+      color: #ccc;
+    }
+  </style>
+</head>
+<body>
+  <h2>📤 تحليل نسيج منطقتين داخل صورة</h2>
+  <input type="file" accept="image/*" id="imageInput" />
+  <canvas id="canvas" width="600" height="400"></canvas>
+  <button onclick="compareAuto()">📊 تحليل التطابق الذكي</button>
+  <div id="result">🔍 بانتظار التحليل...</div>
+
+<script>
+  const canvas = document.getElementById("canvas");
+  const ctx = canvas.getContext("2d");
+  let img = new Image();
+
+  document.getElementById("imageInput").addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.onload = () => {
+      img.src = reader.result;
+      img.onload = () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        // رسم المربعات تلقائيًا
+        ctx.strokeStyle = "#00ff00";
+        ctx.strokeRect(80, 100, 120, 120);
+        ctx.strokeStyle = "#ff0000";
+        ctx.strokeRect(400, 100, 120, 120);
+      };
+    };
+    reader.readAsDataURL(file);
+  });
+
+  function compareAuto() {
+    const resultDiv = document.getElementById("result");
+    const regions = [
+      { x: 80, y: 100, w: 120, h: 120 },
+      { x: 400, y: 100, w: 120, h: 120 }
+    ];
+
+    const analysis = regions.map(r => {
+      const grid = 5;
+      const stepX = r.w / grid;
+      const stepY = r.h / grid;
+      const values = [];
+
+      for (let gy = 0; gy < grid; gy++) {
+        for (let gx = 0; gx < grid; gx++) {
+          const data = ctx.getImageData(r.x + gx * stepX, r.y + gy * stepY, stepX, stepY);
+          values.push(sobel(data));
+        }
+      }
+
+      const avg = mean(values);
+      const dev = deviation(values, avg);
+      return { avg, dev };
+    });
+
+    const [a, b] = analysis;
+    const totalDiff = (Math.abs(a.avg - b.avg) + Math.abs(a.dev - b.dev)) / 2;
+    const similarity = 100 - Math.min(totalDiff, 100);
+
+    let verdict = "";
+    if (similarity > 90) verdict = "✅ المنطقتان متطابقتان فعليًا في النسيج الداخلي";
+    else if (similarity > 70) verdict = "🟡 هناك تقارب جزئي في التشويش";
+    else verdict = "🔴 المنطقتان مختلفتان من حيث البنية البصرية";
+
+    resultDiv.innerHTML = `
+      <strong>🟦 المنطقة اليسرى:</strong><br>
+      - متوسط الحدة: ${a.avg.toFixed(2)}<br>
+      - انحراف التوزيع: ${a.dev.toFixed(2)}<br><br>
+
+      <strong>🟥 المنطقة اليمنى:</strong><br>
+      - متوسط الحدة: ${b.avg.toFixed(2)}<br>
+      - انحراف التوزيع: ${b.dev.toFixed(2)}<br><br>
+
+      <strong>📈 نسبة التطابق الواقعي:</strong> ${similarity.toFixed(1)}%<br>
+      <strong>🔍 التقييم النهائي:</strong> ${verdict}
+    `;
+  }
+
+  function sobel(imgData) {
+    const d = imgData.data;
+    let sum = 0;
+    for (let i = 0; i < d.length; i += 4) {
+      const gray = (d[i] + d[i+1] + d[i+2]) / 3;
+      sum += gray;
+    }
+    return sum / (imgData.width * imgData.height);
+  }
+
+  function mean(arr) {
+    return arr.reduce((a,b) => a + b, 0) / arr.length;
+  }
+
+  function deviation(arr, avg) {
+    return Math.sqrt(arr.reduce((a,b) => a + Math.pow(b - avg, 2), 0) / arr.length);
+  }
+</script>
+</body>
+</html>

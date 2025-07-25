@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>RKEEB | تحليل الصور</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/src/style.css">
+  <script src="/src/logic/hash-basic.js"></script>
+  <script src="/src/logic/similarity.js"></script>
+</head>
+<body class="verify">
+  <h2>🔬 تحليل ومقارنة الصور</h2>
+
+  <!-- القسم التقليدي: صورتين منفصلتين -->
+  <label>📸 صورة الأصل</label><br>
+  <input type="file" id="originalImage" accept="image/*"><br>
+
+  <label>🖼️ صورة للتحقق</label><br>
+  <input type="file" id="checkImage" accept="image/*"><br><br>
+
+  <button onclick="compareImages()">تحليل الصورتين</button>
+
+  <hr><br>
+
+  <!-- القسم الجديد: صورة تحتوي الأصل والمُشتبه به -->
+  <h3>🖼️ تحقق من صورة واحدة تحتوي الأصل والمُشتبه به</h3>
+  <input type="file" id="singleImage" accept="image/*"><br><br>
+  <button onclick="triggerSingle()">تحليل الصورة الموحدة</button>
+
+  <div id="resultMessage"></div>
+  <progress id="matchProgress" value="0" max="100"></progress>
+
+  <!-- الأكواد المنطقية -->
+  <script>
+    async function calculateHash(file) {
+      const arrayBuffer = await file.arrayBuffer();
+      const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    function calculateSimilarity(hashA, hashB) {
+      let match = 0;
+      for (let i = 0; i < hashA.length; i++) {
+        if (hashA[i] === hashB[i]) match++;
+      }
+      return Math.floor((match / hashA.length) * 100);
+    }
+
+    async function compareImages() {
+      const original = document.getElementById('originalImage').files[0];
+      const check = document.getElementById('checkImage').files[0];
+      const result = document.getElementById('resultMessage');
+      const progress = document.getElementById('matchProgress');
+
+      if (!original || !check) {
+        result.innerText = "⚠️ يرجى رفع الصورتين";
+        return;
+      }
+
+      const hash1 = await calculateHash(original);
+      const hash2 = await calculateHash(check);
+      const percent = calculateSimilarity(hash1, hash2);
+
+      progress.value = percent;
+      if (percent >= 90) result.innerText = `✅ تطابق ${percent}% - الأصل مؤكد`;
+      else if (percent >= 70) result.innerText = `⚠️ تطابق ${percent}% - تحقق يدوي`;
+      else result.innerText = `❌ تطابق ${percent}% - محتمل تزوير`;
+    }
+
+    function triggerSingle() {
+      const file = document.getElementById('singleImage').files[0];
+      analyzeSingleImage(file);
+    }
+
+    async function analyzeSingleImage(file) {
+      const result = document.getElementById('resultMessage');
+      const progress = document.getElementById('matchProgress');
+
+      if (!file) {
+        result.innerText = "⚠️ يرجى اختيار صورة تحتوي الأصل والمُشتبه به معًا";
+        return;
+      }
+
+      result.innerText = "⏳ جاري التحليل...";
+
+      const hashLeft = await calculateHalfHash(file, 'left');
+      const hashRight = await calculateHalfHash(file, 'right');
+      const percent = calculateSimilarity(hashLeft, hashRight);
+
+      progress.value = percent;
+      if (percent >= 90) result.innerText = `✅ تطابق ${percent}% - مطابق تمامًا`;
+      else if (percent >= 70) result.innerText = `⚠️ تطابق ${percent}% - تحقق يدوي`;
+      else result.innerText = `❌ تطابق ${percent}% - محتمل تزوير`;
+    }
+
+    async function calculateHalfHash(file, side = 'left') {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const img = new Image();
+          img.src = reader.result;
+
+          img.onload = () => {
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+
+            const halfWidth = img.width / 2;
+            const height = img.height;
+
+            canvas.width = 300;
+            canvas.height = 300;
+
+            const sx = side === 'left' ? 0 : halfWidth;
+            ctx.drawImage(img, sx, 0, halfWidth, height, 0, 0, 300, 300);
+
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imageData.data;
+            for (let i = 0; i < data.length; i += 4) {
+              const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+              data[i] = data[i + 1] = data[i + 2] = avg;
+            }
+            ctx.putImageData(imageData, 0, 0);
+
+            canvas.toBlob(async (blob) => {
+              const arrayBuffer = await blob.arrayBuffer();
+              const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer);
+              const hashArray = Array.from(new Uint8Array(hashBuffer));
+              const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+              resolve(hashHex);
+            }, 'image/png');
+          };
+          img.onerror = reject;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+  </script>
+</body>
+</html>
