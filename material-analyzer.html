@@ -1,0 +1,71 @@
+<!-- تحقق مباشر من المستندين عبر الكاميرا -->
+<div class="card">
+  <h3>📷 تحقق مباشر من المستندين</h3>
+  <video id="liveVideo" autoplay muted playsinline style="display:none;"></video>
+  <canvas id="liveCanvas" width="640" height="480"></canvas>
+  <button onclick="verifyFromCamera()">تحقّق مباشر 🔍</button>
+  <div id="liveResult">📌 وجّه المستندين داخل المربعين</div>
+</div>
+
+<script>
+const liveVideo = document.getElementById("liveVideo");
+const liveCanvas = document.getElementById("liveCanvas");
+const liveCtx = liveCanvas.getContext("2d");
+
+// تشغيل الكاميرا
+navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+  liveVideo.srcObject = stream;
+  requestAnimationFrame(updateLiveFrame);
+});
+
+function updateLiveFrame() {
+  liveCtx.drawImage(liveVideo, 0, 0, liveCanvas.width, liveCanvas.height);
+  drawOverlayBoxes(liveCtx, liveCanvas.width, liveCanvas.height);
+  requestAnimationFrame(updateLiveFrame);
+}
+
+function drawOverlayBoxes(ctx, w, h) {
+  const boxSize = 160;
+  const y = (h - boxSize) / 2;
+  const gap = 20;
+  const x1 = w / 2 - boxSize - gap / 2;
+  const x2 = w / 2 + gap / 2;
+
+  ctx.strokeStyle = "#00ff88";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(x1, y, boxSize, boxSize);
+  ctx.strokeRect(x2, y, boxSize, boxSize);
+}
+
+function verifyFromCamera() {
+  const boxSize = 160;
+  const y = (liveCanvas.height - boxSize) / 2;
+  const gap = 20;
+  const x1 = liveCanvas.width / 2 - boxSize - gap / 2;
+  const x2 = liveCanvas.width / 2 + gap / 2;
+
+  const dataA = liveCtx.getImageData(x1, y, boxSize, boxSize);
+  const dataB = liveCtx.getImageData(x2, y, boxSize, boxSize);
+
+  const score = compareGrayscaleDeviation(dataA, dataB);
+  const resultBox = document.getElementById("liveResult");
+
+  resultBox.innerText =
+    score >= 90 ? `✅ تطابق عالي ${score}%` :
+    score >= 70 ? `⚠️ تطابق متوسط ${score}%` :
+    `❌ اختلاف نسيجي محتمل ${score}%`;
+}
+
+// تحليل انحراف رمادي بسيط
+function compareGrayscaleDeviation(a, b) {
+  const grayA = [], grayB = [];
+  for (let i = 0; i < a.data.length; i += 4) {
+    grayA.push((a.data[i] + a.data[i+1] + a.data[i+2]) / 3);
+    grayB.push((b.data[i] + b.data[i+1] + b.data[i+2]) / 3);
+  }
+  const avgA = grayA.reduce((sum, val) => sum + val, 0) / grayA.length;
+  const avgB = grayB.reduce((sum, val) => sum + val, 0) / grayB.length;
+  const deviation = Math.abs(avgA - avgB);
+  return Math.round(100 - Math.min(deviation, 100));
+}
+</script>
