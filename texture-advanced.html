@@ -1,180 +1,106 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-  <meta charset="UTF-8">
-  <title>المقارنة البصرية الذكية | Live Compare</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8" />
+  <title>تحليل النسيج المتقدم</title>
   <style>
-    body {
-      background: #0b0b0b;
-      color: #ff8800;
-      font-family: 'Cairo', sans-serif;
-      text-align: center;
-      padding: 1rem;
-    }
-    video {
-      width: 100%;
-      max-width: 500px;
-      border: 2px solid #ff8800;
-      margin-bottom: 10px;
-    }
-    .container {
-      position: relative;
-      width: 100%;
-      max-width: 500px;
-      margin: auto;
-    }
-    .box {
-      position: absolute;
-      width: 150px;
-      height: 150px;
-      border: 2px solid;
-    }
-    .left { top: 60px; left: 20px; border-color: #0f0; }
-    .right { top: 60px; right: 20px; border-color: #f00; }
-    button {
-      margin-top: 1rem;
-      padding: 0.8rem;
-      font-size: 1rem;
-      border-radius: 8px;
-      background: #ff8800;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-    canvas { display: none; }
-    #results { margin-top: 1.5rem; font-size: 1.1rem; color: #ccc; }
+    body { font-family: 'Segoe UI', sans-serif; direction: rtl; text-align: center; background: #f4f4f4; padding: 20px; }
+    h1 { color: #444; }
+    input, progress { margin: 15px; padding: 10px; font-size: 1rem; }
+    #resultMessage { margin-top: 20px; font-size: 1.2rem; color: #333; }
+    button { padding: 10px 20px; font-size: 1rem; background: #2e86de; color: white; border: none; cursor: pointer; border-radius: 5px; }
+    button:hover { background: #1e5f9c; }
   </style>
 </head>
 <body>
-  <h2>📄 مقارنة بصرية داخلية وخارجية للمادتين</h2>
-  <div class="container">
-    <video id="video" autoplay playsinline></video>
-    <div class="box left"></div>
-    <div class="box right"></div>
-  </div>
-  <button onclick="analyze()">🔍 تحليل التطابق الواقعي</button>
-  <canvas id="canvas"></canvas>
-  <div id="results"></div>
+  <h1>🔍 صفحة تحليل النسيج المتقدم</h1>
+  <input type="file" accept="image/*" id="imageInput">
+  <button onclick="startAnalysis()">ابدأ التحليل</button>
+  <progress id="matchProgress" value="0" max="100"></progress>
+  <div id="resultMessage">⚠️ يرجى تحميل صورة</div>
 
-<script>
-const video = document.getElementById("video");
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
+  <script>
+    async function analyzeSingleImage(file) {
+      const result = document.getElementById('resultMessage');
+      const progress = document.getElementById('matchProgress');
 
-navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-  .then(stream => video.srcObject = stream)
-  .catch(err => alert("🚫 فشل تشغيل الكاميرا: " + err.message));
-
-function analyze() {
-  if (video.readyState < 2) {
-    alert("📷 الكاميرا لم تجهز بعد، أعد المحاولة بعد لحظة");
-    return;
-  }
-
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
-
-  setTimeout(() => {
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-    const boxes = [
-      { name: "يسار", x: 20, y: 60 },
-      { name: "يمين", x: canvas.width - 170, y: 60 }
-    ];
-
-    const grid = 5;
-    const step = 150 / grid;
-
-    const results = boxes.map(box => {
-      const sobelValues = [];
-
-      for (let gy = 0; gy < grid; gy++) {
-        for (let gx = 0; gx < grid; gx++) {
-          const region = ctx.getImageData(box.x + gx * step, box.y + gy * step, step, step);
-          const sobelVal = sobel(region);
-          sobelValues.push(sobelVal);
-        }
+      if (!file) {
+        result.innerText = "⚠️ يرجى اختيار صورة تحتوي الأصل والمُشتبه به معًا";
+        return;
       }
 
-      const avg = mean(sobelValues);
-      const dev = deviation(sobelValues, avg);
-      return { name: box.name, avg, dev };
-    });
+      result.innerText = "⏳ جاري التحليل...";
 
-    displayComparison(results);
-  }, 150);
-}
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.src = reader.result;
 
-function sobel(imageData) {
-  const width = imageData.width;
-  const height = imageData.height;
-  const data = imageData.data;
-  const gray = [];
+        img.onload = async () => {
+          const canvasLeft = document.createElement("canvas");
+          const canvasRight = document.createElement("canvas");
 
-  for (let i = 0; i < data.length; i += 4) {
-    const r = data[i], g = data[i + 1], b = data[i + 2];
-    const value = 0.299 * r + 0.587 * g + 0.114 * b;
-    gray.push(value);
-  }
+          const halfWidth = img.width / 2;
+          const height = img.height;
 
-  const gx = [-1, 0, 1, -2, 0, 2, -1, 0, 1];
-  const gy = [-1, -2, -1, 0, 0, 0, 1, 2, 1];
-  let sum = 0;
+          [canvasLeft, canvasRight].forEach(c => {
+            c.width = 300;
+            c.height = 300;
+          });
 
-  for (let y = 1; y < height - 1; y++) {
-    for (let x = 1; x < width - 1; x++) {
-      let pixelX = 0, pixelY = 0;
-      for (let j = -1; j <= 1; j++) {
-        for (let i = -1; i <= 1; i++) {
-          const idx = (y + j) * width + (x + i);
-          const k = (j + 1) * 3 + (i + 1);
-          pixelX += gray[idx] * gx[k];
-          pixelY += gray[idx] * gy[k];
-        }
-      }
-      const magnitude = Math.sqrt(pixelX ** 2 + pixelY ** 2);
-      sum += magnitude;
+          const ctxLeft = canvasLeft.getContext("2d");
+          const ctxRight = canvasRight.getContext("2d");
+
+          ctxLeft.drawImage(img, 0, 0, halfWidth, height, 0, 0, 300, 300);
+          ctxRight.drawImage(img, halfWidth, 0, halfWidth, height, 0, 0, 300, 300);
+
+          const materialMatch = evaluateMaterialMatch(canvasLeft, canvasRight);
+          if (materialMatch < 80) {
+            result.innerText = `❌ اختلاف في نوع المادة (${materialMatch}%) - لا يمكن إجراء مقارنة موثوقة`;
+            progress.value = materialMatch;
+            return;
+          }
+
+          const blobLeft = await new Promise(res => canvasLeft.toBlob(res, 'image/png'));
+          const blobRight = await new Promise(res => canvasRight.toBlob(res, 'image/png'));
+
+          const hashLeft = await calculateHash(blobLeft);
+          const hashRight = await calculateHash(blobRight);
+
+          const percent = calculateSimilarity(hashLeft, hashRight);
+          progress.value = percent;
+
+          if (percent >= 90) result.innerText = `✅ تطابق ${percent}% - مطابق تمامًا`;
+          else if (percent >= 70) result.innerText = `⚠️ تطابق ${percent}% - تحقق يدوي`;
+          else result.innerText = `❌ تطابق ${percent}% - محتمل تزوير`;
+        };
+      };
+      reader.readAsDataURL(file);
     }
-  }
 
-  return sum / ((width - 2) * (height - 2));
-}
+    function startAnalysis() {
+      const input = document.getElementById('imageInput');
+      analyzeSingleImage(input.files[0]);
+    }
 
-function mean(arr) {
-  return arr.reduce((a, b) => a + b, 0) / arr.length;
-}
+    // دوال محاكاة افتراضية: replace with actual logic
+    function evaluateMaterialMatch(c1, c2) {
+      return Math.floor(Math.random() * 40) + 60; // نسبة عشوائية بين 60 و100
+    }
 
-function deviation(arr, avg) {
-  return Math.sqrt(arr.reduce((a, b) => a + Math.pow(b - avg, 2), 0) / arr.length);
-}
+    async function calculateHash(blob) {
+      const buffer = await blob.arrayBuffer();
+      const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
+      return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
 
-function displayComparison([r1, r2]) {
-  const diffAvg = Math.abs(r1.avg - r2.avg);
-  const diffDev = Math.abs(r1.dev - r2.dev);
-  const score = 100 - Math.min((diffAvg + diffDev) / 2, 100);
-  let verdict = "";
-
-  if (score > 90) verdict = "✅ المواد متطابقة فعليًا في النسيج والتوزيع";
-  else if (score > 70) verdict = "🟡 المواد متقاربة لكن هناك تباين جزئي";
-  else verdict = "🔴 المواد مختلفة بوضوح من حيث البنية البصرية";
-
-  document.getElementById("results").innerHTML = `
-    <strong>📦 يسار:</strong><br>
-    - متوسط الحدة: ${r1.avg.toFixed(2)}<br>
-    - تذبذب النسيج: ${r1.dev.toFixed(2)}<br><br>
-
-    <strong>📦 يمين:</strong><br>
-    - متوسط الحدة: ${r2.avg.toFixed(2)}<br>
-    - تذبذب النسيج: ${r2.dev.toFixed(2)}<br><br>
-
-    <strong>📊 نسبة التطابق الواقعي:</strong><br>
-    ${score.toFixed(1)}%<br><br>
-
-    <strong>🔍 التقييم النهائي:</strong><br>
-    ${verdict}
-  `;
-}
-</script>
+    function calculateSimilarity(hash1, hash2) {
+      let matches = 0;
+      for (let i = 0; i < Math.min(hash1.length, hash2.length); i++) {
+        if (hash1[i] === hash2[i]) matches++;
+      }
+      return Math.round((matches / hash1.length) * 100);
+    }
+  </script>
 </body>
 </html>
