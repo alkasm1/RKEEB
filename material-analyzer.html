@@ -1,7 +1,7 @@
 <!-- تحقق مباشر من المستندين عبر الكاميرا -->
 <div class="card">
   <h3>📷 تحقق مباشر من المستندين</h3>
-  <video id="liveVideo" autoplay muted playsinline style="display:none;"></video>
+  <video id="liveVideo" autoplay muted playsinline style="width:640px; height:480px;"></video>
   <canvas id="liveCanvas" width="640" height="480"></canvas>
   <button onclick="verifyFromCamera()">تحقّق مباشر 🔍</button>
   <div id="liveResult">📌 وجّه المستندين داخل المربعين</div>
@@ -12,10 +12,24 @@ const liveVideo = document.getElementById("liveVideo");
 const liveCanvas = document.getElementById("liveCanvas");
 const liveCtx = liveCanvas.getContext("2d");
 
-// تشغيل الكاميرا
-navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
-  liveVideo.srcObject = stream;
-  requestAnimationFrame(updateLiveFrame);
+// تشغيل الكاميرا عند تحميل الصفحة
+window.addEventListener("DOMContentLoaded", () => {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    alert("🚫 لا يمكن الوصول إلى الكاميرا من هذا الجهاز.");
+    return;
+  }
+
+  navigator.mediaDevices.getUserMedia({ video: true })
+    .then(stream => {
+      liveVideo.srcObject = stream;
+      liveVideo.onloadedmetadata = () => {
+        liveVideo.play();
+        updateLiveFrame();
+      };
+    })
+    .catch(err => {
+      alert("⚠️ فشل تشغيل الكاميرا: " + err.message);
+    });
 });
 
 function updateLiveFrame() {
@@ -56,7 +70,6 @@ function verifyFromCamera() {
     `❌ اختلاف نسيجي محتمل ${score}%`;
 }
 
-// تحليل انحراف رمادي بسيط
 function compareGrayscaleDeviation(a, b) {
   const grayA = [], grayB = [];
   for (let i = 0; i < a.data.length; i += 4) {
