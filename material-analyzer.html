@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>نظام تحليل المادة ومكافحة التزوير</title>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; padding: 20px; background: #f2f2f2; }
+    .compare-section { background: #fff; padding: 20px; border-radius: 10px; }
+    h3 { margin-top: 20px; color: #333; }
+    button, input[type="file"] {
+      padding: 10px; margin-top: 10px; width: 100%;
+      border-radius: 6px; border: none; background: #0078D7; color: white;
+    }
+    canvas { border: 1px solid #ccc; margin-top: 15px; max-width: 100%; }
+    #matchResult { margin-top: 15px; font-size: 16px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <div class="compare-section">
+    <h3>📸 تصوير مباشر</h3>
+    <button onclick="activateCameraCompare()">ابدأ تصوير الورقتين</button>
+
+    <h3>🖼️ تحميل يدوي</h3>
+    <input type="file" id="uploadImage" accept="image/*">
+    <button onclick="triggerSingle()">🔍 تحقق من تطابق المادة</button>
+
+    <h3>🔲 اختيار أجزاء المقارنة</h3>
+    <canvas id="selectionCanvas" width="600" height="400"></canvas>
+    <p>حدد منطقتين يدويًا أو دع النظام يقسم الصورة تلقائيًا</p>
+
+    <button onclick="showFinalMatch()">✅ عرض تطابق الورقتين</button>
+    <div id="matchResult"></div>
+  </div>
+
+  <script>
+    function activateCameraCompare() {
+      alert("ميزة التصوير المباشر ستتم إضافتها عبر WebRTC أو واجهة التطبيق لاحقًا.");
+    }
+
+    function triggerSingle() {
+      const imageInput = document.getElementById('uploadImage');
+      if (!imageInput.files[0]) return alert("يرجى تحميل صورة أولاً.");
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const img = new Image();
+        img.onload = () => drawCanvas(img);
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(imageInput.files[0]);
+    }
+
+    function drawCanvas(img) {
+      const canvas = document.getElementById("selectionCanvas");
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      // تقسيم تلقائي إلى منطقتين:
+      const region1 = ctx.getImageData(50, 50, 100, 100);
+      const region2 = ctx.getImageData(450, 250, 100, 100);
+      const result = evaluateMaterialMatch(region1, region2);
+      document.getElementById("matchResult").innerText = درجة التطابق: ${Math.round(result.finalScore)}٪;
+    }
+
+    function compareHistograms(r1, r2) {
+      // تبسيط: فرق متوسط البكسل
+      let diff = 0;
+      for (let i = 0; i < r1.data.length; i += 4) {
+        diff += Math.abs(r1.data[i] - r2.data[i]);
+      }
+      return 100 - Math.min(100, diff / (r1.data.length / 4));
+    }
+
+    function compareTextureLBP(r1, r2) {
+      // محاكاة مبدأ نسيجي بسيط: فرق حدة البكسل
+      let sharpness1 = 0, sharpness2 = 0;
+      for (let i = 0; i < r1.data.length; i += 4) {
+        sharpness1 += r1.data[i] - r1.data[i + 4] || 0;
+        sharpness2 += r2.data[i] - r2.data[i + 4] || 0;
+      }
+      return 100 - Math.abs(sharpness1 - sharpness2) / 1000;
+    }
+
+    function compareGLCM(r1, r2) {
+      // تبسيط: فرق تباين المنطقة
+      const contrast = (r) => {
+        let c = 0;
+        for (let i = 0; i < r.data.length; i += 4) {
+          c += Math.pow(r.data[i] - r.data[i + 4] || 0, 2);
+        }
+        return c;
+      };
+      return 100 - Math.abs(contrast(r1) - contrast(r2)) / 5000;
+    }
+
+    function evaluateMaterialMatch(r1, r2) {
+      const histogram = compareHistograms(r1, r2);
+      const texture = compareTextureLBP(r1, r2);
+      const glcm = compareGLCM(r1, r2);
+      const finalScore = Math.round((histogram + texture + glcm) / 3);
+      return { histogram, texture, glcm, finalScore };
+    }
+
+    function showFinalMatch() {
+      alert("تم تحليل المادة بنجاح. النتيجة بالأسفل.");
+    }
+  </script>
+</body>
+</html>
+اين موقعة
