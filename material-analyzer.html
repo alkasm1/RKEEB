@@ -1,84 +1,123 @@
-<!-- تحقق مباشر من المستندين عبر الكاميرا -->
-<div class="card">
-  <h3>📷 تحقق مباشر من المستندين</h3>
-  <video id="liveVideo" autoplay muted playsinline style="width:640px; height:480px;"></video>
-  <canvas id="liveCanvas" width="640" height="480"></canvas>
-  <button onclick="verifyFromCamera()">تحقّق مباشر 🔍</button>
-  <div id="liveResult">📌 وجّه المستندين داخل المربعين</div>
-</div>
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8" />
+  <title>Rqeeb Visual Analyzer</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; background: #f0f0f0; }
+    canvas, video { border: 2px solid #333; margin: 10px; }
+    #zoomCanvas { width: 200px; height: 200px; }
+  </style>
+</head>
+<body>
 
-<script>
-const liveVideo = document.getElementById("liveVideo");
-const liveCanvas = document.getElementById("liveCanvas");
-const liveCtx = liveCanvas.getContext("2d");
+  <h1>🔍 Rqeeb Visual Analyzer</h1>
 
-// تشغيل الكاميرا عند تحميل الصفحة
-window.addEventListener("DOMContentLoaded", () => {
-  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    alert("🚫 لا يمكن الوصول إلى الكاميرا من هذا الجهاز.");
-    return;
-  }
+  <video id="video" width="400" autoplay></video><br>
+  <canvas id="canvas" width="400" height="300"></canvas><br>
+  <canvas id="zoomCanvas" width="200" height="200"></canvas>
 
-  navigator.mediaDevices.getUserMedia({ video: true })
-    .then(stream => {
-      liveVideo.srcObject = stream;
-      liveVideo.onloadedmetadata = () => {
-        liveVideo.play();
-        updateLiveFrame();
-      };
-    })
-    .catch(err => {
-      alert("⚠️ فشل تشغيل الكاميرا: " + err.message);
-    });
-});
+  <button onclick="RqeebVisualAnalyzer.captureFrame(video, canvas)">📷 تحليل الصورة</button>
+  <button onclick="runAnalysis()">📊 نتائج الانعكاس والعمق</button>
 
-function updateLiveFrame() {
-  liveCtx.drawImage(liveVideo, 0, 0, liveCanvas.width, liveCanvas.height);
-  drawOverlayBoxes(liveCtx, liveCanvas.width, liveCanvas.height);
-  requestAnimationFrame(updateLiveFrame);
-}
+  <div id="result"></div>
 
-function drawOverlayBoxes(ctx, w, h) {
-  const boxSize = 160;
-  const y = (h - boxSize) / 2;
-  const gap = 20;
-  const x1 = w / 2 - boxSize - gap / 2;
-  const x2 = w / 2 + gap / 2;
+  <script>
+    // تعريف الفيديو والكانفاس
+    const video = document.getElementById("video");
+    const canvas = document.getElementById("canvas");
+    const zoomCanvas = document.getElementById("zoomCanvas");
 
-  ctx.strokeStyle = "#00ff88";
-  ctx.lineWidth = 2;
-  ctx.strokeRect(x1, y, boxSize, boxSize);
-  ctx.strokeRect(x2, y, boxSize, boxSize);
-}
+    // الوحدة كاملة داخل الصفحة
+    const RqeebVisualAnalyzer = (() => {
+      async function openCamera(videoEl) {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
+          videoEl.srcObject = stream;
+          await videoEl.play();
+          console.log("📸 الكاميرا تعمل");
+        } catch (err) {
+          console.error("🚫 لم يتم الوصول إلى الكاميرا", err);
+          alert("فشل الوصول إلى الكاميرا. استخدم رفع صورة يدوياً.");
+        }
+      }
 
-function verifyFromCamera() {
-  const boxSize = 160;
-  const y = (liveCanvas.height - boxSize) / 2;
-  const gap = 20;
-  const x1 = liveCanvas.width / 2 - boxSize - gap / 2;
-  const x2 = liveCanvas.width / 2 + gap / 2;
+      function captureFrame(videoEl, canvasEl) {
+        const ctx = canvasEl.getContext("2d");
+        ctx.drawImage(videoEl, 0, 0, canvasEl.width, canvasEl.height);
+      }
 
-  const dataA = liveCtx.getImageData(x1, y, boxSize, boxSize);
-  const dataB = liveCtx.getImageData(x2, y, boxSize, boxSize);
+      function analyzeReflection(ctx, x, y, w, h) {
+        const data = ctx.getImageData(x, y, w, h).data;
+        let brightPixels = 0;
+        for (let i = 0; i < data.length; i += 4) {
+          const b = data[i] + data[i + 1] + data[i + 2];
+          if (b > 600) brightPixels++;
+        }
+        return Math.round((brightPixels / (w * h)) * 100);
+      }
 
-  const score = compareGrayscaleDeviation(dataA, dataB);
-  const resultBox = document.getElementById("liveResult");
+      function estimateDepth(ctx, width, height) {
+        const img = ctx.getImageData(0, 0, width, height).data;
+        const depthMap = [];
+        for (let i = 0; i < img.length; i += 4) {
+          const avg = (img[i] + img[i + 1] + img[i + 2]) / 3;
+          depthMap.push(avg);
+        }
+        return depthMap;
+      }
 
-  resultBox.innerText =
-    score >= 90 ? `✅ تطابق عالي ${score}%` :
-    score >= 70 ? `⚠️ تطابق متوسط ${score}%` :
-    `❌ اختلاف نسيجي محتمل ${score}%`;
-}
+      function sobelEdge(ctx, width, height) {
+        const imgData = ctx.getImageData(0, 0, width, height);
+        const gray = new Uint8ClampedArray(width * height);
+        for (let i = 0; i < imgData.data.length; i += 4) {
+          const avg = (imgData.data[i] + imgData.data[i + 1] + imgData.data[i + 2]) / 3;
+          gray[i / 4] = avg;
+        }
+        const edge = new Uint8ClampedArray(width * height);
+        for (let y = 1; y < height - 1; y++) {
+          for (let x = 1; x < width - 1; x++) {
+            const gx =
+              -gray[(y - 1) * width + (x - 1)] + gray[(y - 1) * width + (x + 1)] +
+              -2 * gray[y * width + (x - 1)] + 2 * gray[y * width + (x + 1)] +
+              -gray[(y + 1) * width + (x - 1)] + gray[(y + 1) * width + (x + 1)];
+            const gy =
+              -gray[(y - 1) * width + (x - 1)] - 2 * gray[(y - 1) * width + x] - gray[(y - 1) * width + (x + 1)] +
+              gray[(y + 1) * width + (x - 1)] + 2 * gray[(y + 1) * width + x] + gray[(y + 1) * width + (x + 1)];
+            edge[y * width + x] = Math.sqrt(gx * gx + gy * gy);
+          }
+        }
+        return edge;
+      }
 
-function compareGrayscaleDeviation(a, b) {
-  const grayA = [], grayB = [];
-  for (let i = 0; i < a.data.length; i += 4) {
-    grayA.push((a.data[i] + a.data[i+1] + a.data[i+2]) / 3);
-    grayB.push((b.data[i] + b.data[i+1] + b.data[i+2]) / 3);
-  }
-  const avgA = grayA.reduce((sum, val) => sum + val, 0) / grayA.length;
-  const avgB = grayB.reduce((sum, val) => sum + val, 0) / grayB.length;
-  const deviation = Math.abs(avgA - avgB);
-  return Math.round(100 - Math.min(deviation, 100));
-}
-</script>
+      function initZoom(canvas, zoomCanvas) {
+        canvas.addEventListener("click", (e) => {
+          const x = e.offsetX, y = e.offsetY;
+          const ctx = canvas.getContext("2d");
+          const zctx = zoomCanvas.getContext("2d");
+          zctx.clearRect(0, 0, zoomCanvas.width, zoomCanvas.height);
+          zctx.drawImage(canvas, x - 20, y - 20, 40, 40, 0, 0, zoomCanvas.width, zoomCanvas.height);
+        });
+      }
+
+      return { openCamera, captureFrame, analyzeReflection, estimateDepth, sobelEdge, initZoom };
+    })();
+
+    // تفعيل الكاميرا والزوم
+    RqeebVisualAnalyzer.openCamera(video);
+    RqeebVisualAnalyzer.initZoom(canvas, zoomCanvas);
+
+    function runAnalysis() {
+      const ctx = canvas.getContext("2d");
+      const reflection = RqeebVisualAnalyzer.analyzeReflection(ctx, 50, 50, 100, 100);
+      const depth = RqeebVisualAnalyzer.estimateDepth(ctx, canvas.width, canvas.height);
+      const edgeMap = RqeebVisualAnalyzer.sobelEdge(ctx, canvas.width, canvas.height);
+
+      document.getElementById("result").innerHTML =
+        `✨ نسبة الانعكاس: ${reflection}%<br>` +
+        `🌀 متوسط العمق: ${Math.round(depth.reduce((a, b) => a + b) / depth.length)}<br>` +
+        `📏 نقاط الحواف المستخرجة: ${edgeMap.length}`;
+    }
+  </script>
+</body>
+</html>
