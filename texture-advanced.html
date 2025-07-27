@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8" />
+  <title>رقيب | تحليل نسيج متقدم</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      background: #0a0a0a;
+      color: #ff8800;
+      font-family: Tajawal, sans-serif;
+      padding: 2rem;
+      text-align: center;
+    }
+    .card {
+      background: #1a1a1a;
+      padding: 1rem;
+      border-radius: 10px;
+      margin: 1rem auto;
+      max-width: 480px;
+      box-shadow: 0 0 10px #000;
+    }
+    input[type="file"], button {
+      width: 100%;
+      padding: 0.8rem;
+      margin-top: 10px;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: none;
+    }
+    button {
+      background: #ff8800;
+      color: #fff;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #e67600;
+    }
+    #resultMessage {
+      margin-top: 20px;
+      font-size: 1.2rem;
+      color: #fff;
+    }
+    .nav {
+      margin-top: 30px;
+    }
+    .nav a {
+      display: inline-block;
+      background: #292929;
+      color: #ff8800;
+      padding: 0.6rem 1.2rem;
+      text-decoration: none;
+      border-radius: 8px;
+      margin: 0.2rem;
+    }
+    .nav a:hover {
+      background: #3a3a3a;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧬 رقيب | تحليل نسيج متقدم للتحقق من الورق</h1>
+
+  <div class="card">
+    <h3>📁 اختيار الأصل</h3>
+    <input type="file" accept="image/*" id="originalFile">
+    <h3>📷 تصوير الأصل</h3>
+    <input type="file" accept="image/*" capture="environment" id="originalCam">
+  </div>
+
+  <div class="card">
+    <h3>📁 اختيار التحقق</h3>
+    <input type="file" accept="image/*" id="checkFile">
+    <h3>📷 تصوير التحقق</h3>
+    <input type="file" accept="image/*" capture="environment" id="checkCam">
+  </div>
+
+  <div class="card">
+    <button onclick="startAdvancedTextureCompare()">🔍 تحليل دقيق</button>
+    <div id="resultMessage">بانتظار اختيار الصور...</div>
+  </div>
+
+  <div class="nav">
+    <a href="index.html">🏠 الصفحة الرئيسية</a>
+  </div>
+
+<script>
+function startAdvancedTextureCompare() {
+  const original = document.getElementById('originalCam').files[0] || document.getElementById('originalFile').files[0];
+  const check = document.getElementById('checkCam').files[0] || document.getElementById('checkFile').files[0];
+  const result = document.getElementById("resultMessage");
+
+  if (!original || !check) {
+    result.innerText = "⚠️ يرجى اختيار أو تصوير الملفين أولًا";
+    return;
+  }
+
+  result.innerText = "🔬 جاري تحليل النسيج...";
+
+  Promise.all([loadImage(original), loadImage(check)])
+    .then(([img1, img2]) => {
+      const score = compareTextures(img1, img2);
+      if (score >= 90)
+        result.innerText = `✅ تطابق ${score.toFixed(1)}% - الورقتان متطابقتان`;
+      else if (score >= 70)
+        result.innerText = `⚠️ تطابق ${score.toFixed(1)}% - فحص يدوي موصى به`;
+      else
+        result.innerText = `❌ تطابق ${score.toFixed(1)}% - محتمل تزوير`;
+    })
+    .catch(() => result.innerText = "❌ خطأ في معالجة الصور");
+}
+
+function loadImage(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.src = reader.result;
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function compareTextures(img1, img2) {
+  const sobelScore = img => {
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    canvas.width = img.width;
+    canvas.height = img.height;
+    ctx.drawImage(img, 0, 0);
+
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const sobelData = computeSobel(imageData);
+    return sobelData.averageGradient;
+  };
+
+  const g1 = sobelScore(img1);
+  const g2 = sobelScore(img2);
+  const diff = Math.abs(g1 - g2);
+  return 100 - Math.min(diff * 1.2, 100);
+}
+
+function computeSobel(imageData) {
+  const width = imageData.width;
+  const height = imageData.height;
+  const gray = [];
+
+  for (let i = 0; i < imageData.data.length; i += 4) {
+    const r = imageData.data[i];
+    const g = imageData.data[i + 1];
+    const b = imageData.data[i + 2];
+    const avg = (r + g + b) / 3;
+    gray.push(avg);
+  }
+
+  const gx = [-1, 0, 1, -2, 0, 2, -1, 0, 1];
+  const gy = [-1, -2, -1, 0, 0, 0, 1, 2, 1];
+  let gradientSum = 0;
+
+  for (let y = 1; y < height - 1; y++) {
+    for (let x = 1; x < width - 1; x++) {
+      let pixelX = 0;
+      let pixelY = 0;
+      for (let dy = -1; dy <= 1; dy++) {
+        for (let dx = -1; dx <= 1; dx++) {
+          const px = x + dx;
+          const py = y + dy;
+          const index = py * width + px;
+          const k = (dy + 1) * 3 + (dx + 1);
+          pixelX += gray[index] * gx[k];
+          pixelY += gray[index] * gy[k];
+        }
+      }
+      const magnitude = Math.sqrt(pixelX ** 2 + pixelY ** 2);
+      gradientSum += magnitude;
+    }
+  }
+
+  const averageGradient = gradientSum / ((width - 2) * (height - 2));
+  return { averageGradient };
+}
+</script>
+
+</body>
+</html>
