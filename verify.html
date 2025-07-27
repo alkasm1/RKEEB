@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>Rqeeb | تحقق بصري متقدم</title>
+  <style>
+    body {
+      background: #0b0b0b;
+      color: #ff8800;
+      font-family: 'Cairo', sans-serif;
+      padding: 2rem;
+      text-align: center;
+    }
+    h1 { font-size: 2.5rem; }
+    .card {
+      background: #1c1c1c;
+      padding: 1rem;
+      border-radius: 12px;
+      box-shadow: 0 0 10px #000;
+      margin-bottom: 1rem;
+      max-width: 500px;
+      margin: auto;
+    }
+    input, button {
+      width: 100%;
+      padding: 0.8rem;
+      margin-top: 10px;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: none;
+    }
+    input[type="file"] {
+      background: #28a745;
+      color: white;
+      cursor: pointer;
+    }
+    button {
+      background: #ff8800;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #e06900;
+    }
+    canvas {
+      margin-top: 1rem;
+      border: 1px solid #333;
+    }
+    #resultMessage {
+      font-size: 1.2rem;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔍 تحقق بصري متقدم - Rqeeb</h1>
+
+  <div class="card">
+    <p>اختر صورة تحتوي الأصل والمُشتبه به في جهتين</p>
+    <input type="file" accept="image/*" id="imageInput">
+    <button onclick="startVisualCheck()">ابدأ التحقق البصري</button>
+    <canvas id="canvasLeft" width="256" height="256"></canvas>
+    <canvas id="canvasRight" width="256" height="256"></canvas>
+    <div id="resultMessage">🧪 بانتظار التحليل...</div>
+  </div>
+
+  <script>
+    async function startVisualCheck() {
+      const input = document.getElementById('imageInput');
+      const file = input.files[0];
+      if (!file) return alert("يرجى اختيار صورة أولاً.");
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.src = reader.result;
+        img.onload = async () => {
+          const canvasLeft = document.getElementById('canvasLeft');
+          const canvasRight = document.getElementById('canvasRight');
+          const ctxL = canvasLeft.getContext("2d");
+          const ctxR = canvasRight.getContext("2d");
+
+          const halfW = img.width / 2;
+          const h = img.height;
+
+          ctxL.drawImage(img, 0, 0, halfW, h, 0, 0, canvasLeft.width, canvasLeft.height);
+          ctxR.drawImage(img, halfW, 0, halfW, h, 0, 0, canvasRight.width, canvasRight.height);
+
+          const textureScore = evaluateMaterialTextureGLCM(canvasLeft, canvasRight);
+
+          if (textureScore < 70) {
+            document.getElementById('resultMessage').innerText = `❌ اختلاف في نمط النسيج (${textureScore}%) - لا يمكن مقارنة موثوقة`;
+            return;
+          }
+
+          const hashL = await getCanvasHash(canvasLeft);
+          const hashR = await getCanvasHash(canvasRight);
+          const match = calculateSimilarity(hashL, hashR);
+
+          document.getElementById('resultMessage').innerText =
+            match >= 90 ? `✅ تطابق عالي (${match}%)` :
+            match >= 70 ? `⚠️ تطابق متوسط (${match}%) - تحقق يدوي` :
+            `❌ تطابق منخفض (${match}%) - محتمل تزوير`;
+        };
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function getCanvasHash(canvas) {
+      return new Promise((resolve) => {
+        canvas.toBlob(async (blob) => {
+          const buf = await blob.arrayBuffer();
+          const hashBuf = await crypto.subtle.digest('SHA-256', buf);
+          const hashArray = Array.from(new Uint8Array(hashBuf));
+          resolve(hashArray.map(b => b.toString(16).padStart(2, '0')).join(''));
+        }, 'image/png');
+      });
+    }
+
+    function calculateSimilarity(hash1, hash2) {
+      let match = 0;
+      for (let i = 0; i < Math.min(hash1.length, hash2.length); i++) {
+        if (hash1[i] === hash2[i]) match++;
+      }
+      return Math.round((match / hash1.length) * 100);
+    }
+
+    // تحليل GLCM مبسّط بناءً على التباين المحلي
+    function evaluateMaterialTextureGLCM(canvasA, canvasB) {
+      const getGray = (ctx, w, h) => {
+        const data = ctx.getImageData(0, 0, w, h).data;
+        const g = [];
+        for (let i = 0; i < data.length; i += 4) {
+          g.push((data[i] + data[i + 1] + data[i + 2]) / 3);
+        }
+        return g;
+      };
+
+      const contrast = (gray, w) => {
+        let total = 0;
+        for (let y = 0; y < w - 1; y++) {
+          for (let x = 0; x < w - 1; x++) {
+            const i = y * w + x;
+            total += Math.pow(gray[i] - gray[i + 1], 2);
+          }
+        }
+        return total;
+      };
+
+      const ctxA = canvasA.getContext('2d');
+      const ctxB = canvasB.getContext('2d');
+      const w = canvasA.width;
+      const h = canvasA.height;
+
+      const gA = getGray(ctxA, w, h);
+      const gB = getGray(ctxB, w, h);
+
+      const cA = contrast(gA, w);
+      const cB = contrast(gB, w);
+
+      const diff = Math.abs(cA - cB);
+      const max = Math.max(cA, cB) || 1;
+
+      return Math.round(100 - Math.min((diff / max) * 100, 100));
+    }
+  </script>
+</body>
+</html>
