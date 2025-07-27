@@ -2,137 +2,80 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8" />
-  <title>تحقق نسيجي مباشر | Rqeeb</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>وحدة التحقق البصري</title>
   <style>
-    body {
-      background: #0e0e0e;
-      color: #ff8800;
-      font-family: 'Tajawal', Arial, sans-serif;
-      text-align: center;
-      padding: 2rem;
-    }
-    .card {
-      background: #1c1c1c;
-      padding: 1rem;
-      margin: 1rem auto;
-      border-radius: 10px;
-      max-width: 480px;
-      box-shadow: 0 0 10px #000;
-    }
-    input[type="file"], button {
-      width: 100%;
-      padding: 0.8rem;
-      margin-top: 10px;
-      font-size: 1rem;
-      border-radius: 8px;
-      border: none;
-    }
-    button {
-      background: #ff8800;
-      color: #fff;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #e67600;
-    }
-    #resultMessage {
-      margin-top: 20px;
-      font-size: 1.2rem;
-      color: #fff;
-    }
-    canvas {
-      margin-top: 10px;
-      border-radius: 8px;
-      box-shadow: 0 0 5px #444;
-    }
+    body { background:#111; color:#fff; text-align:center; font-family:sans-serif }
+    canvas { border:1px solid #ccc; margin-top:10px }
+    #controls { margin:20px }
+    button { padding:10px 20px; font-size:16px }
   </style>
 </head>
 <body>
-
-  <h1>🧵 تحليل ومقارنة النسيج</h1>
-
-  <div class="card">
-    <input type="file" accept="image/*" capture="environment" id="inputImage">
-    <button onclick="startAnalysis()">🔍 بدء التحليل</button>
-    <div id="resultMessage">📷 يرجى رفع صورة الورقة للتحقق</div>
-    <canvas id="previewCanvas" width="320" height="240"></canvas>
+  <h2>📷 وحدة التحقق البصري الحي</h2>
+  <video id="video" autoplay muted playsinline style="display:none;"></video>
+  <canvas id="canvas" width="640" height="480"></canvas>
+  <div id="controls">
+    <button onclick="verifyDirect()">تحقق مباشر</button>
   </div>
 
-<script>
-async function startAnalysis() {
-  const fileInput = document.getElementById('inputImage').files[0];
-  const result = document.getElementById("resultMessage");
-  const canvas = document.getElementById("previewCanvas");
-  const ctx = canvas.getContext("2d");
+  <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    let regions = [];
 
-  if (!fileInput) {
-    result.innerText = "⚠️ يجب رفع صورة واضحة للتحقق.";
-    return;
-  }
+    function drawOverlays() {
+      const regionWidth = 150;
+      const regionHeight = 150;
+      const y = (canvas.height - regionHeight) / 2;
+      const gap = 20;
+      const center = canvas.width / 2;
 
-  const img = await loadImage(fileInput);
-  canvas.width = img.width;
-  canvas.height = img.height;
-  ctx.drawImage(img, 0, 0);
+      regions = [
+        { x: center - regionWidth - gap / 2, y: y, w: regionWidth, h: regionHeight },
+        { x: center + gap / 2, y: y, w: regionWidth, h: regionHeight }
+      ];
 
-  const regions = [
-    { x: 30, y: 60, w: 180, h: 180 },
-    { x: img.width - 210, y: 60, w: 180, h: 180 }
-  ];
+      ctx.strokeStyle = 'rgba(0,255,0,0.8)';
+      ctx.lineWidth = 2;
 
-  const scores = regions.map(r => {
-    const regionData = ctx.getImageData(r.x, r.y, r.w, r.h);
-    return sobel(regionData);
-  });
+      regions.forEach(r => ctx.strokeRect(r.x, r.y, r.w, r.h));
+    }
 
-  const avg = mean(scores);
-  const dev = deviation(scores, avg);
-  const matchScore = Math.round(100 - Math.min((Math.abs(scores[0]-scores[1]) + dev)/2, 100));
+    function startCamera() {
+      navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+        video.srcObject = stream;
+        requestAnimationFrame(updateFrame);
+      }).catch(err => console.error('Camera error:', err));
+    }
 
-  result.innerText = matchScore >= 85
-    ? `✅ تطابق نسيجي ${matchScore}% - نتيجة قوية`
-    : matchScore >= 65
-    ? `⚠️ تطابق ${matchScore}% - تحقق إضافي مقترح`
-    : `❌ تطابق ${matchScore}% - اختلاف محتمل أو تزوير`;
+    function updateFrame() {
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      drawOverlays();
+      requestAnimationFrame(updateFrame);
+    }
 
-  // رسم مستطيلات على الصورة الأصل
-  ctx.strokeStyle = "#ff8800";
-  ctx.lineWidth = 3;
-  regions.forEach(r => ctx.strokeRect(r.x, r.y, r.w, r.h));
-}
+    function verifyDirect() {
+      // تحليل مباشر لمحتوى المربعين داخل الفيديو الحي
+      const imageDataA = ctx.getImageData(regions[0].x, regions[0].y, regions[0].w, regions[0].h);
+      const imageDataB = ctx.getImageData(regions[1].x, regions[1].y, regions[1].w, regions[1].h);
 
-function loadImage(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const img = new Image();
-      img.src = reader.result;
-      img.onload = () => resolve(img);
-      img.onerror = reject;
-    };
-    reader.readAsDataURL(file);
-  });
-}
+      // مثال أولي على مقارنة البكسلات - يمكن استبداله بخوارزميات أدق لاحقًا
+      const diff = compareImages(imageDataA, imageDataB);
+      alert(diff < 0.1 ? '✅ المستندان متطابقان تقريبًا' : '❌ هناك فروقات واضحة');
+    }
 
-function sobel(imageData) {
-  let sum = 0;
-  const data = imageData.data;
-  for (let i = 0; i < data.length; i += 4) {
-    const gray = (data[i] + data[i + 1] + data[i + 2]) / 3;
-    sum += gray;
-  }
-  return sum / (imageData.width * imageData.height);
-}
+    function compareImages(dataA, dataB) {
+      let diff = 0;
+      for (let i = 0; i < dataA.data.length; i += 4) {
+        const da = dataA.data;
+        const db = dataB.data;
+        diff += Math.abs(da[i] - db[i]) + Math.abs(da[i+1] - db[i+1]) + Math.abs(da[i+2] - db[i+2]);
+      }
+      return diff / dataA.data.length / 255;
+    }
 
-function mean(arr) {
-  return arr.reduce((a, b) => a + b, 0) / arr.length;
-}
-
-function deviation(arr, avg) {
-  return Math.sqrt(arr.reduce((a, b) => a + Math.pow(b - avg, 2), 0) / arr.length);
-}
-</script>
-
+    window.onload = startCamera;
+  </script>
 </body>
 </html>
