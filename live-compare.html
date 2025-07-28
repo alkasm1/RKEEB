@@ -1,113 +1,88 @@
-<!DOCTYPE html>
-<html lang="ar">
-<head>
-  <meta charset="UTF-8" />
-  <title>التحقق الذكي التلقائي | Analyzer Vision</title>
-  <style>
-    body { background: #0b0b0b; color: #ff8800; font-family: 'Cairo', sans-serif; text-align: center; padding: 1rem; }
-    video { width: 100%; max-width: 500px; border: 2px solid #ff8800; margin-bottom: 10px; }
-    button { margin: 1rem; padding: 0.8rem; font-size: 1rem; border-radius: 8px; background: #ff8800; color: white; border: none; cursor: pointer; }
-    canvas { display: none; }
-    #results { margin-top: 1rem; font-size: 1rem; color: #ccc; }
-    #confirmBtn { display: none; margin-bottom: 1rem; }
-  </style>
-</head>
-<body>
-  <h2>🧠 التحقق البصري التلقائي للمستندين</h2>
-  <video id="video" autoplay playsinline></video>
-  <button onclick="analyze()">🔍 تحليل تلقائي للمربعات</button>
-  <button id="confirmBtn" onclick="confirmMatch()">✅ تحقق فعلي</button>
-  <canvas id="canvas"></canvas>
-  <div id="results"></div>
-
+<canvas id="canvas" width="800" height="400"></canvas>
 <script>
-const video = document.getElementById("video");
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
-navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-  .then(stream => video.srcObject = stream)
-  .catch(err => alert("🚫 فشل تشغيل الكاميرا"));
+
+// تحميل الصورة أو الفيديو في canvas
+const img = new Image();
+img.src = "frame.png"; // لقطة فيديو أو صورة تمثل المواد
+img.onload = () => {
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  analyze();
+};
+
+function extractBoxes(canvas, side = "left") {
+  const boxes = [];
+  const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const boxSize = 80;
+  const step = 40;
+  const half = canvas.width / 2;
+
+  const startX = side === "left" ? 0 : half;
+
+  for (let y = 0; y < canvas.height - boxSize; y += step) {
+    for (let x = startX; x < startX + half - boxSize; x += step) {
+      boxes.push({ x, y });
+    }
+  }
+  return boxes;
+}
+
+function getBoxData(x, y) {
+  return ctx.getImageData(x, y, 80, 80).data;
+}
+
+function calculateScore(data1, data2) {
+  let sum = 0;
+  for (let i = 0; i < data1.length; i += 4) {
+    const diff =
+      Math.abs(data1[i] - data2[i]) + // Red
+      Math.abs(data1[i + 1] - data2[i + 1]) + // Green
+      Math.abs(data1[i + 2] - data2[i + 2]);  // Blue
+    sum += diff;
+  }
+  return sum;
+}
+
+function drawMatchBoxes(leftBox, rightBox) {
+  // يسار
+  ctx.strokeStyle = "#00ff00";
+  ctx.lineWidth = 3;
+  ctx.strokeRect(leftBox.x, leftBox.y, 80, 80);
+
+  // يمين
+  ctx.strokeStyle = "#ff0000";
+  ctx.strokeRect(rightBox.x, rightBox.y, 80, 80);
+
+  // عرض النسبة التقريبية
+  ctx.font = "16px Arial";
+  ctx.fillStyle = "#00ff00";
+  ctx.fillText("✓", leftBox.x + 5, leftBox.y + 20);
+
+  ctx.fillStyle = "#ff0000";
+  ctx.fillText("✓", rightBox.x + 5, rightBox.y + 20);
+}
 
 function analyze() {
-  if (video.readyState < 2) return alert("📷 الكاميرا لم تجهز بعد");
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
-  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  const leftBoxes = extractBoxes(canvas, "left");
+  const rightBoxes = extractBoxes(canvas, "right");
 
-  const blockSize = 80, step = 20;
-  const leftBlocks = [], rightBlocks = [];
+  let bestScore = Infinity;
+  let bestMatch = {};
 
-  for (let y = 50; y < canvas.height - blockSize; y += step) {
-    for (let x = 0; x < canvas.width / 2 - blockSize; x += step) {
-      leftBlocks.push({ x, y, data: ctx.getImageData(x, y, blockSize, blockSize) });
+  for (const left of leftBoxes) {
+    const data1 = getBoxData(left.x, left.y);
+    for (const right of rightBoxes) {
+      const data2 = getBoxData(right.x, right.y);
+      const score = calculateScore(data1, data2);
+      if (score < bestScore) {
+        bestScore = score;
+        bestMatch = { left, right };
+      }
     }
-    for (let x = canvas.width / 2; x < canvas.width - blockSize; x += step) {
-      rightBlocks.push({ x, y, data: ctx.getImageData(x, y, blockSize, blockSize) });
-    }
   }
 
-  let bestMatch = { score: 0, left: null, right: null };
-
-  leftBlocks.forEach(lb => {
-    rightBlocks.forEach(rb => {
-      const score = compareShapeAndColor(lb.data, rb.data);
-      if (score > bestMatch.score) bestMatch = { score, left: lb, right: rb };
-    });
-  });
-
-  if (bestMatch.score < 90) {
-    document.getElementById("results").innerHTML =
-      `📷 أعلى تشابه شكلي/لوني تم العثور عليه: ${bestMatch.score.toFixed(1)}% ❌ لا يمكن المتابعة`;
-    document.getElementById("confirmBtn").style.display = "none";
-    return;
-  }
-
-  const t1 = analyzeTexture(bestMatch.left.data);
-  const t2 = analyzeTexture(bestMatch.right.data);
-  const diffAvg = Math.abs(t1.avg - t2.avg);
-  const diffDev = Math.abs(t1.dev - t2.dev);
-  const textureScore = 100 - Math.min((diffAvg + diffDev) / 2, 100);
-
-  let msg = `
-    ✅ تم العثور على زوج متشابه بنسبة ${bestMatch.score.toFixed(1)}%<br><br>
-    📦 يسار (x=${bestMatch.left.x}, y=${bestMatch.left.y})<br>
-    📦 يمين (x=${bestMatch.right.x}, y=${bestMatch.right.y})<br><br>
-    📊 النسيج: ${textureScore.toFixed(1)}%<br>
-  `;
-  msg += textureScore < 75
-    ? "⚠️ الشكل متطابق لكن الورقة أو المادة مختلفة: احتمال تزوير!"
-    : "✅ الشكل والنسيج متطابقان بشكل ميداني";
-
-  document.getElementById("results").innerHTML = msg;
-  document.getElementById("confirmBtn").style.display = "inline-block";
-}
-
-function analyzeTexture(data) {
-  let sum = 0, values = [];
-  for (let i = 0; i < data.data.length; i += 4) {
-    const gray = (data.data[i] + data.data[i+1] + data.data[i+2]) / 3;
-    values.push(gray); sum += gray;
-  }
-  const avg = sum / values.length;
-  const dev = Math.sqrt(values.reduce((a, b) => a + Math.pow(b - avg, 2), 0) / values.length);
-  return { avg, dev };
-}
-
-function compareShapeAndColor(a, b) {
-  let score = 0;
-  for (let i = 0; i < a.data.length; i += 4) {
-    const dr = Math.abs(a.data[i] - b.data[i]);
-    const dg = Math.abs(a.data[i+1] - b.data[i+1]);
-    const db = Math.abs(a.data[i+2] - b.data[i+2]);
-    const diff = (dr + dg + db) / 3;
-    score += (255 - diff) / 255 * 100;
-  }
-  return score / (a.data.length / 4);
-}
-
-function confirmMatch() {
-  alert("🧠 تم التحقق فعليًا: التطابق الكامل بين الشكل والنسيج بنسبة أعلى من 90%");
+  drawMatchBoxes(bestMatch.left, bestMatch.right);
+  console.log("أفضل تطابق:", bestScore);
 }
 </script>
-</body>
-</html>
