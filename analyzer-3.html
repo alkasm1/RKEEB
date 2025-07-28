@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>analyzer-3 | نزيه - وحدة التحقق البصري</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; background: #f9f9f9; direction: rtl; }
+    canvas { max-width: 90%; margin-top: 10px; border: 1px solid #ccc; }
+    #result { white-space: pre-wrap; text-align: right; margin-top: 20px; background: #fff; padding: 10px; border-radius: 6px; }
+    input[type="file"] { margin: 15px; font-size: 16px; }
+    button, .nav { padding: 10px 20px; font-size: 16px; background: #007bff; color: white; border: none; border-radius: 6px; text-decoration: none; display: inline-block; margin: 10px; }
+  </style>
+</head>
+<body>
+
+  <h2>📷 وحدة التحقق البصري - نزيه 1.0</h2>
+
+  <input type="file" accept="image/*" capture="environment" id="uploadCamera">
+  <label for="uploadCamera">📷 تصوير مباشر</label>
+
+  <br>
+
+  <input type="file" accept="image/*" id="uploadGallery">
+  <label for="uploadGallery">🖼️ اختيار من الاستديو</label>
+
+  <br><br>
+  <canvas id="canvas"></canvas>
+  <div id="result"></div>
+
+  <!-- 🔁 زر الانتقال إلى صفحة أخرى -->
+  <a href="previous-page.html" class="nav">🔙 العودة</a>
+
+  <script>
+    let canvas = document.getElementById("canvas");
+    let ctx = canvas.getContext("2d");
+    let resultBox = document.getElementById("result");
+
+    function handleImageUpload(input) {
+      const file = input.files[0];
+      if (!file) return;
+      const img = new Image();
+      img.onload = () => processImage(img);
+      img.src = URL.createObjectURL(file);
+    }
+
+    document.getElementById("uploadCamera").onchange = () => handleImageUpload(uploadCamera);
+    document.getElementById("uploadGallery").onchange = () => handleImageUpload(uploadGallery);
+
+    function processImage(img) {
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.drawImage(img, 0, 0);
+
+      const w = img.width / 2;
+      const h = img.height;
+      const squareSize = 60;
+
+      let rightBox = ctx.getImageData(w, h / 3, squareSize, squareSize);
+      let leftBox = ctx.getImageData(w - squareSize - 20, h / 3, squareSize, squareSize);
+
+      function getAverageColor(data) {
+        let r = 0, g = 0, b = 0;
+        for (let i = 0; i < data.data.length; i += 4) {
+          r += data.data[i];
+          g += data.data[i + 1];
+          b += data.data[i + 2];
+        }
+        const n = data.data.length / 4;
+        return [r / n, g / n, b / n];
+      }
+
+      const avg1 = getAverageColor(rightBox);
+      const avg2 = getAverageColor(leftBox);
+
+      const diff = Math.sqrt(
+        Math.pow(avg1[0] - avg2[0], 2) +
+        Math.pow(avg1[1] - avg2[1], 2) +
+        Math.pow(avg1[2] - avg2[2], 2)
+      );
+
+      let similarity = Math.max(0, 100 - diff / 2.5).toFixed(2);
+
+      ctx.strokeStyle = "green";
+      ctx.lineWidth = 3;
+      ctx.strokeRect(w, h / 3, squareSize, squareSize);
+      ctx.strokeStyle = "red";
+      ctx.strokeRect(w - squareSize - 20, h / 3, squareSize, squareSize);
+
+      let success = similarity >= 90;
+
+      resultBox.innerText =
+        `✅ تم اختيار الزوج الأعلى تشابهًا تلقائيًا:\n\n` +
+        `🟩 الأصل (يمين): (${Math.round(w)}, ${Math.round(h / 3)})\n` +
+        `🟥 المشتبه (يسار): (${Math.round(w - squareSize - 20)}, ${Math.round(h / 3)})\n\n` +
+        `📊 نسبة التشابه اللونية: ${similarity}%\n` +
+        (success ? `📌 ✅ تطابق ناجح (أعلى من 90%)` : `⚠️ تطابق غير كافٍ (أقل من 90%)`);
+    }
+  </script>
+
+</body>
+</html>
