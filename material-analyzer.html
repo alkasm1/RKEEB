@@ -2,121 +2,71 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8" />
-  <title>Rqeeb Visual Analyzer</title>
+  <title>أداة تحليل المادة</title>
   <style>
-    body { font-family: sans-serif; text-align: center; background: #f0f0f0; }
-    canvas, video { border: 2px solid #333; margin: 10px; }
-    #zoomCanvas { width: 200px; height: 200px; }
+    body { font-family: sans-serif; direction: rtl; }
+    canvas { border: 1px solid #888; margin: 10px; }
+    .zone { display: flex; justify-content: space-around; flex-wrap: wrap; }
+    button { margin: 5px; padding: 10px; }
   </style>
 </head>
 <body>
-
-  <h1>🔍 Rqeeb Visual Analyzer</h1>
-
-  <video id="video" width="400" autoplay></video><br>
-  <canvas id="canvas" width="400" height="300"></canvas><br>
-  <canvas id="zoomCanvas" width="200" height="200"></canvas>
-
-  <button onclick="RqeebVisualAnalyzer.captureFrame(video, canvas)">📷 تحليل الصورة</button>
-  <button onclick="runAnalysis()">📊 نتائج الانعكاس والعمق</button>
-
-  <div id="result"></div>
+  <h2>تحليل نسيجي لمادتين في نفس الصورة</h2>
+  <video id="video" width="320" height="240" autoplay></video>
+  <button onclick="capture()">📸 تصوير مباشر</button>
+  <canvas id="sourceCanvas" width="320" height="240"></canvas>
+  <div class="zone">
+    <canvas id="region1" width="100" height="100"></canvas>
+    <canvas id="region2" width="100" height="100"></canvas>
+  </div>
+  <button onclick="analyze()">🔍 تحليل ومطابقة</button>
+  <p id="result">نتيجة التحليل: </p>
 
   <script>
-    // تعريف الفيديو والكانفاس
-    const video = document.getElementById("video");
-    const canvas = document.getElementById("canvas");
-    const zoomCanvas = document.getElementById("zoomCanvas");
+    const video = document.getElementById('video');
+    const sourceCanvas = document.getElementById('sourceCanvas');
+    const region1 = document.getElementById('region1');
+    const region2 = document.getElementById('region2');
+    const result = document.getElementById('result');
 
-    // الوحدة كاملة داخل الصفحة
-    const RqeebVisualAnalyzer = (() => {
-      async function openCamera(videoEl) {
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
-          videoEl.srcObject = stream;
-          await videoEl.play();
-          console.log("📸 الكاميرا تعمل");
-        } catch (err) {
-          console.error("🚫 لم يتم الوصول إلى الكاميرا", err);
-          alert("فشل الوصول إلى الكاميرا. استخدم رفع صورة يدوياً.");
-        }
+    navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+      video.srcObject = stream;
+    });
+
+    function capture() {
+      sourceCanvas.getContext('2d').drawImage(video, 0, 0, sourceCanvas.width, sourceCanvas.height);
+      result.textContent = "📌 تم التقاط الصورة. اختر منطقتين للتحليل.";
+    }
+
+    sourceCanvas.addEventListener('click', function(e) {
+      const rect = sourceCanvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const context = sourceCanvas.getContext('2d');
+      const imageData = context.getImageData(x - 50, y - 50, 100, 100);
+      if (!region1.dataset.filled) {
+        region1.getContext('2d').putImageData(imageData, 0, 0);
+        region1.dataset.filled = "true";
+      } else {
+        region2.getContext('2d').putImageData(imageData, 0, 0);
+        region2.dataset.filled = "";
+      }
+    });
+
+    function analyze() {
+      const data1 = region1.getContext('2d').getImageData(0, 0, 100, 100).data;
+      const data2 = region2.getContext('2d').getImageData(0, 0, 100, 100).data;
+
+      let diff = 0;
+      for (let i = 0; i < data1.length; i += 4) {
+        const gray1 = (data1[i] + data1[i + 1] + data1[i + 2]) / 3;
+        const gray2 = (data2[i] + data2[i + 1] + data2[i + 2]) / 3;
+        diff += Math.abs(gray1 - gray2);
       }
 
-      function captureFrame(videoEl, canvasEl) {
-        const ctx = canvasEl.getContext("2d");
-        ctx.drawImage(videoEl, 0, 0, canvasEl.width, canvasEl.height);
-      }
-
-      function analyzeReflection(ctx, x, y, w, h) {
-        const data = ctx.getImageData(x, y, w, h).data;
-        let brightPixels = 0;
-        for (let i = 0; i < data.length; i += 4) {
-          const b = data[i] + data[i + 1] + data[i + 2];
-          if (b > 600) brightPixels++;
-        }
-        return Math.round((brightPixels / (w * h)) * 100);
-      }
-
-      function estimateDepth(ctx, width, height) {
-        const img = ctx.getImageData(0, 0, width, height).data;
-        const depthMap = [];
-        for (let i = 0; i < img.length; i += 4) {
-          const avg = (img[i] + img[i + 1] + img[i + 2]) / 3;
-          depthMap.push(avg);
-        }
-        return depthMap;
-      }
-
-      function sobelEdge(ctx, width, height) {
-        const imgData = ctx.getImageData(0, 0, width, height);
-        const gray = new Uint8ClampedArray(width * height);
-        for (let i = 0; i < imgData.data.length; i += 4) {
-          const avg = (imgData.data[i] + imgData.data[i + 1] + imgData.data[i + 2]) / 3;
-          gray[i / 4] = avg;
-        }
-        const edge = new Uint8ClampedArray(width * height);
-        for (let y = 1; y < height - 1; y++) {
-          for (let x = 1; x < width - 1; x++) {
-            const gx =
-              -gray[(y - 1) * width + (x - 1)] + gray[(y - 1) * width + (x + 1)] +
-              -2 * gray[y * width + (x - 1)] + 2 * gray[y * width + (x + 1)] +
-              -gray[(y + 1) * width + (x - 1)] + gray[(y + 1) * width + (x + 1)];
-            const gy =
-              -gray[(y - 1) * width + (x - 1)] - 2 * gray[(y - 1) * width + x] - gray[(y - 1) * width + (x + 1)] +
-              gray[(y + 1) * width + (x - 1)] + 2 * gray[(y + 1) * width + x] + gray[(y + 1) * width + (x + 1)];
-            edge[y * width + x] = Math.sqrt(gx * gx + gy * gy);
-          }
-        }
-        return edge;
-      }
-
-      function initZoom(canvas, zoomCanvas) {
-        canvas.addEventListener("click", (e) => {
-          const x = e.offsetX, y = e.offsetY;
-          const ctx = canvas.getContext("2d");
-          const zctx = zoomCanvas.getContext("2d");
-          zctx.clearRect(0, 0, zoomCanvas.width, zoomCanvas.height);
-          zctx.drawImage(canvas, x - 20, y - 20, 40, 40, 0, 0, zoomCanvas.width, zoomCanvas.height);
-        });
-      }
-
-      return { openCamera, captureFrame, analyzeReflection, estimateDepth, sobelEdge, initZoom };
-    })();
-
-    // تفعيل الكاميرا والزوم
-    RqeebVisualAnalyzer.openCamera(video);
-    RqeebVisualAnalyzer.initZoom(canvas, zoomCanvas);
-
-    function runAnalysis() {
-      const ctx = canvas.getContext("2d");
-      const reflection = RqeebVisualAnalyzer.analyzeReflection(ctx, 50, 50, 100, 100);
-      const depth = RqeebVisualAnalyzer.estimateDepth(ctx, canvas.width, canvas.height);
-      const edgeMap = RqeebVisualAnalyzer.sobelEdge(ctx, canvas.width, canvas.height);
-
-      document.getElementById("result").innerHTML =
-        `✨ نسبة الانعكاس: ${reflection}%<br>` +
-        `🌀 متوسط العمق: ${Math.round(depth.reduce((a, b) => a + b) / depth.length)}<br>` +
-        `📏 نقاط الحواف المستخرجة: ${edgeMap.length}`;
+      const avgDiff = diff / (data1.length / 4);
+      const similarity = Math.max(0, 100 - avgDiff * 0.5);
+      result.textContent = `✅ نسبة التشابه النسيجي: ${similarity.toFixed(2)}٪`;
     }
   </script>
 </body>
