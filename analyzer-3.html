@@ -97,6 +97,13 @@
           `🟥 المشتبه (يسار): (${Math.round(w - s - 20)}, ${Math.round(h / 3)})\n\n` +
           `📊 نسبة التشابه اللونية: ${similarity}%\n` +
           `📌 ✅ تطابق ناجح (أعلى من 90%)`;
+    <!-- ملخص الكود - فقط الجزء الأساسي المحدث -->
+<div id="resultBox">
+  <p>🟩 الأصل (يمين الصورة): إحداثيات (<span id="origX"></span>, <span id="origY"></span>) بحجم <span id="boxSize"></span>×<span id="boxSize"></span></p>
+  <p>🟥 المشتبه (يسار الصورة): إحداثيات (<span id="susX"></span>, <span id="susY"></span>) بحجم <span id="boxSize"></span>×<span id="boxSize"></span></p>
+  <p>📊 نسبة التشابه اللونية المحسوبة: <strong id="matchRate"></strong>%</p>
+  <canvas id="matchCanvas" width="140" height="70"></canvas>
+</div>
       } else {
         verifyBtn.style.display = "none";
         resultBox.innerText =
