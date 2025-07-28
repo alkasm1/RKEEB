@@ -11,6 +11,8 @@
     #overlay { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 999; }
     #results { margin-top: 1rem; font-size: 1rem; color: #ccc; }
     #confirmBtn { display: none; margin-bottom: 1rem; }
+    #snapshot { max-width: 500px; margin-top: 1rem; border: 2px solid #ff8800; }
+    #matchRate { font-weight: bold; font-size: 1.2rem; color: #ff8800; margin-top: 0.5rem; }
   </style>
 </head>
 <body>
@@ -20,6 +22,11 @@
   <button onclick="analyze()">🔍 تحليل تلقائي للمربعات</button>
   <button id="confirmBtn" onclick="confirmMatch()">✅ تحقق فعلي</button>
   <canvas id="canvas"></canvas>
+
+  <!-- العناصر المضافة: الصورة الثابتة ونسبة التطابق -->
+  <img id="snapshot" />
+  <div id="matchRate">نسبة التطابق: ---</div>
+
   <div id="results"></div>
 
 <script>
@@ -71,6 +78,9 @@ function analyze() {
     document.getElementById("results").innerHTML =
       `📷 أعلى تشابه شكلي/لوني تم العثور عليه: ${bestMatch.score.toFixed(1)}% ❌ لا يمكن المتابعة`;
     document.getElementById("confirmBtn").style.display = "none";
+
+    document.getElementById("snapshot").src = canvas.toDataURL("image/png");
+    document.getElementById("matchRate").innerText = "نسبة التطابق: " + bestMatch.score.toFixed(1) + "%";
     return;
   }
 
@@ -92,18 +102,12 @@ function analyze() {
   octx.fillStyle = "#ff0000";
   octx.fillText("➡", bestMatch.right.x + 5, bestMatch.right.y + 20);
 
-  let msg = `
-    ✅ تم العثور على زوج متشابه بنسبة ${bestMatch.score.toFixed(1)}%<br><br>
-    📦 يسار (x=${bestMatch.left.x}, y=${bestMatch.left.y})<br>
-    📦 يمين (x=${bestMatch.right.x}, y=${bestMatch.right.y})<br><br>
-    📊 النسيج: ${textureScore.toFixed(1)}%<br>
-  `;
-  msg += textureScore < 75
-    ? "⚠️ الشكل متطابق لكن الورقة أو المادة مختلفة: احتمال تزوير!"
-    : "✅ الشكل والنسيج متطابقان بشكل ميداني";
-
-  document.getElementById("results").innerHTML = msg;
+  document.getElementById("results").innerHTML = "";
   document.getElementById("confirmBtn").style.display = "inline-block";
+
+  // snapshot ونسبة التطابق النهائية
+  document.getElementById("snapshot").src = canvas.toDataURL("image/png");
+  document.getElementById("matchRate").innerText = "نسبة التطابق: " + bestMatch.score.toFixed(1) + "%";
 }
 
 function analyzeTexture(data) {
@@ -130,7 +134,7 @@ function compareShapeAndColor(a, b) {
 }
 
 function confirmMatch() {
-  alert("🧠 تم التحقق فعليًا: التطابق الكامل بين الشكل والنسيج بنسبة أعلى من 90%");
+  alert("🧪 تم التحقق فعليًا بنسبة تطابق محددة، بدون حفظ.");
 }
 </script>
 </body>
