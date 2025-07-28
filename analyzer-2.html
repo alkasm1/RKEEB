@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8" />
+  <title>Rqeeb Analyzer V2</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; direction: rtl; background: #f0f0f0; }
+    canvas, video { border: 2px solid #444; margin: 10px; }
+    button { padding: 8px 20px; margin: 5px; font-size: 16px; }
+    #matchCanvas { border: 2px dashed #00aa88; }
+  </style>
+</head>
+<body>
+
+  <h2>🎯 تحليل بصري احترافي | Rqeeb</h2>
+  <video id="video" width="400" autoplay muted></video><br>
+  <canvas id="canvas" width="400" height="300"></canvas><br>
+  <button onclick="capture()">📸 تصوير مباشر</button>
+  <button onclick="findMatch()">🔍 اختيار المربعين الأكثر تطابقًا</button><br>
+  <canvas id="matchCanvas" width="220" height="100"></canvas>
+  <p id="result">📌 جاهز للمقارنة</p>
+
+  <script>
+    const video = document.getElementById("video");
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    const result = document.getElementById("result");
+    const matchCanvas = document.getElementById("matchCanvas");
+    const mctx = matchCanvas.getContext("2d");
+
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => video.srcObject = stream)
+      .catch(err => alert("⚠️ لم يتم الوصول إلى الكاميرا"));
+
+    function capture() {
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      result.textContent = "📸 تم التقاط الصورة. جاهز للتحليل.";
+    }
+
+    function findMatch() {
+      const boxes = divideCanvas(canvas);
+      const scores = [];
+      for (let a of boxes.filter(b => b.side === "left")) {
+        for (let b of boxes.filter(b => b.side === "right")) {
+          const dataA = ctx.getImageData(a.x, a.y, a.w, a.h).data;
+          const dataB = ctx.getImageData(b.x, b.y, b.w, b.h).data;
+          const grayA = extractGrayscale(dataA);
+          const grayB = extractGrayscale(dataB);
+          const glcmA = computeGLCM(grayA, a.w, a.h);
+          const glcmB = computeGLCM(grayB, b.w, b.h);
+          const score = compareGLCM(glcmA, glcmB);
+          scores.push({ a, b, score });
+        }
+      }
+
+      scores.sort((x, y) => y.score - x.score);
+      const top = scores[0];
+      const boxA = top.a;
+      const boxB = top.b;
+
+      const dataA = ctx.getImageData(boxA.x, boxA.y, boxA.w, boxA.h);
+      const dataB = ctx.getImageData(boxB.x, boxB.y, boxB.w, boxB.h);
+      mctx.clearRect(0, 0, 220, 100);
+      mctx.putImageData(dataA, 0, 0);
+      mctx.putImageData(dataB, 110, 0);
+
+      result.textContent = `✅ نسبة تطابق نسيجي بين المنطقتين: ${top.score.toFixed(2)} / 256`;
+    }
+
+    function divideCanvas(canvas) {
+      const width = canvas.width;
+      const height = canvas.height;
+      const boxSize = 50;
+      const boxes = [];
+
+      const cols = Math.floor(width / 2 / boxSize);
+      const rows = Math.floor(height / boxSize);
+
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          boxes.push({ x: x * boxSize, y: y * boxSize, w: boxSize, h: boxSize, side: "left" });
+          boxes.push({ x: width / 2 + x * boxSize, y: y * boxSize, w: boxSize, h: boxSize, side: "right" });
+        }
+      }
+      return boxes;
+    }
+
+    function extractGrayscale(data) {
+      const gray = [];
+      for (let i = 0; i < data.length; i += 4) {
+        const g = (data[i] + data[i+1] + data[i+2]) / 3;
+        gray.push(Math.round(g));
+      }
+      return gray;
+    }
+
+    function computeGLCM(gray, w, h) {
+      const glcm = Array.from({ length: 256 }, () => Array(256).fill(0));
+      for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w - 1; x++) {
+          const i = gray[y * w + x];
+          const j = gray[y * w + x + 1];
+          glcm[i][j]++;
+        }
+      }
+      const total = glcm.flat().reduce((sum, val) => sum + val, 0);
+      for (let i = 0; i < 256; i++) {
+        for (let j = 0; j < 256; j++) {
+          glcm[i][j] /= total || 1;
+        }
+      }
+      return glcm;
+    }
+
+    function compareGLCM(g1, g2) {
+      let score = 0;
+      for (let i = 0; i < 256; i++) {
+        for (let j = 0; j < 256; j++) {
+          score += 1 - Math.abs(g1[i][j] - g2[i][j]);
+        }
+      }
+      return score;
+    }
+  </script>
+
+</body>
+</html>
