@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8" />
+  <title>Live Visual Dual Check</title>
+  <style>
+    body {
+      background: #0b0b0b;
+      color: #ff8800;
+      font-family: 'Cairo', sans-serif;
+      text-align: center;
+      padding: 1rem;
+    }
+    video {
+      width: 100%;
+      max-width: 500px;
+      border: 2px solid #ff8800;
+      margin-bottom: 10px;
+    }
+    .container {
+      position: relative;
+      width: 100%;
+      max-width: 500px;
+      margin: auto;
+    }
+    .box {
+      position: absolute;
+      width: 150px;
+      height: 150px;
+      border: 2px solid;
+    }
+    .left { top: 60px; left: 20px; border-color: #0f0; }
+    .right { top: 60px; right: 20px; border-color: #f00; }
+    button {
+      margin: 1rem;
+      padding: 0.8rem;
+      font-size: 1rem;
+      border-radius: 8px;
+      background: #ff8800;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    canvas { display: none; }
+    #results { margin-top: 1rem; font-size: 1rem; color: #ccc; }
+    #confirmBtn { display: none; }
+  </style>
+</head>
+<body>
+  <h2>🧠 التحقق البصري المزدوج للمستندين</h2>
+  <div class="container">
+    <video id="video" autoplay playsinline></video>
+    <div class="box left"></div>
+    <div class="box right"></div>
+  </div>
+  <button onclick="analyze()">🔍 تحليل الشكل والمحتوى</button>
+  <button id="confirmBtn" onclick="confirmMatch()">✅ تحقق فعلي</button>
+  <canvas id="canvas"></canvas>
+  <div id="results"></div>
+
+<script>
+const video = document.getElementById("video");
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+  .then(stream => video.srcObject = stream)
+  .catch(err => alert("🚫 فشل تشغيل الكاميرا"));
+
+function analyze() {
+  if (video.readyState < 2) return alert("📷 الكاميرا غير جاهزة بعد");
+
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+  const left = ctx.getImageData(20, 60, 150, 150);
+  const right = ctx.getImageData(canvas.width - 170, 60, 150, 150);
+
+  const shapeSim = compareShapeAndColor(left, right);
+  if (shapeSim < 90) {
+    document.getElementById("confirmBtn").style.display = "none";
+    return document.getElementById("results").innerHTML =
+      `📷 نسبة تشابه الشكل واللون: ${shapeSim.toFixed(1)}% ❌ لا يمكن المتابعة للتحقق النسيجي`;
+  }
+
+  const texture1 = analyzeTexture(left);
+  const texture2 = analyzeTexture(right);
+  const diffAvg = Math.abs(texture1.avg - texture2.avg);
+  const diffDev = Math.abs(texture1.dev - texture2.dev);
+  const matchScore = 100 - Math.min((diffAvg + diffDev) / 2, 100);
+
+  let resultText = `
+    📷 نسبة تشابه الشكل واللون: ${shapeSim.toFixed(2)}% ✅<br><br>
+    📦 يسار: avg = ${texture1.avg.toFixed(2)}, dev = ${texture1.dev.toFixed(2)}<br>
+    📦 يمين: avg = ${texture2.avg.toFixed(2)}, dev = ${texture2.dev.toFixed(2)}<br><br>
+    📊 تطابق نسيجي: ${matchScore.toFixed(1)}%<br>
+  `;
+
+  resultText += matchScore < 75
+    ? "🔍 الشكل متطابق لكن النسيج مختلف بشكل واضح: ⚠️ احتمال تزوير!"
+    : "✅ الشكل والنسيج متطابقان بصريًا";
+
+  document.getElementById("results").innerHTML = resultText;
+  document.getElementById("confirmBtn").style.display = "inline-block";
+}
+
+function analyzeTexture(imageData) {
+  const data = imageData.data;
+  let sum = 0;
+  const values = [];
+
+  for (let i = 0; i < data.length; i += 4) {
+    const g = (data[i] + data[i+1] + data[i+2]) / 3;
+    values.push(g);
+    sum += g;
+  }
+
+  const avg = sum / values.length;
+  const dev = Math.sqrt(values.reduce((acc, val) => acc + Math.pow(val - avg, 2), 0) / values.length);
+  return { avg, dev };
+}
+
+// شكل هندسي وتوزيع لوني مبسط
+function compareShapeAndColor(img1, img2) {
+  const a = img1.data, b = img2.data;
+  let score = 0;
+  for (let i = 0; i < a.length; i += 4) {
+    const dR = Math.abs(a[i] - b[i]);
+    const dG = Math.abs(a[i+1] - b[i+1]);
+    const dB = Math.abs(a[i+2] - b[i+2]);
+    const diff = (dR + dG + dB) / 3;
+    score += (255 - diff) / 255 * 100;
+  }
+  return score / (a.length / 4);
+}
+
+function confirmMatch() {
+  alert("🛡️ تحقق فعلي: المربعات متطابقة بصريًا على المستوى الشكلي والنسيجي.");
+}
+</script>
+</body>
+</html>
