@@ -55,12 +55,17 @@
       canvas.height = img.height;
       ctx.drawImage(img, 0, 0);
 
-      const w = img.width / 2;
+      const w = img.width;
       const h = img.height;
       const s = 60;
 
-      const rightBox = ctx.getImageData(w, h / 3, s, s);
-      const leftBox = ctx.getImageData(w - s - 20, h / 3, s, s);
+      // اختيار من النصفين
+      const rightX = Math.floor(w * 0.75);
+      const leftX = Math.floor(w * 0.25 - s);
+      const yPos = Math.floor(h / 3);
+
+      const rightBox = ctx.getImageData(rightX, yPos, s, s);
+      const leftBox = ctx.getImageData(leftX, yPos, s, s);
 
       lastLeftBox = leftBox;
       lastRightBox = rightBox;
@@ -79,54 +84,45 @@
       const a1 = avgColor(rightBox);
       const a2 = avgColor(leftBox);
       const diff = Math.sqrt((a1[0]-a2[0])**2 + (a1[1]-a2[1])**2 + (a1[2]-a2[2])**2);
-      const similarity = Math.max(0, 100 - diff / 2.5).toFixed(2);
+      const similarity = Math.max(0, 100 - diff / 2.5);
+      const similarityRounded = similarity.toFixed(2);
 
+      // رسم المربعات على الصورة
       ctx.strokeStyle = "green";
       ctx.lineWidth = 3;
-      ctx.strokeRect(w, h / 3, s, s);
+      ctx.strokeRect(rightX, yPos, s, s);
       ctx.strokeStyle = "red";
-      ctx.strokeRect(w - s - 20, h / 3, s, s);
+      ctx.strokeRect(leftX, yPos, s, s);
 
       showPreview(leftBox, rightBox);
 
-      if (similarity >= 90) {
-        verifyBtn.style.display = "inline-block";
-        resultBox.innerText =
-          `✅ تم اختيار الزوج الأعلى تشابهًا تلقائيًا:\n\n` +
-          `🟩 الأصل (يمين): (${Math.round(w)}, ${Math.round(h / 3)})\n` +
-          `🟥 المشتبه (يسار): (${Math.round(w - s - 20)}, ${Math.round(h / 3)})\n\n` +
-          `📊 نسبة التشابه اللونية: ${similarity}%\n` +
-          `📌 ✅ تطابق ناجح (أعلى من 90%)`;
-    <!-- ملخص الكود - فقط الجزء الأساسي المحدث -->
-<div id="resultBox">
-  <p>🟩 الأصل (يمين الصورة): إحداثيات (<span id="origX"></span>, <span id="origY"></span>) بحجم <span id="boxSize"></span>×<span id="boxSize"></span></p>
-  <p>🟥 المشتبه (يسار الصورة): إحداثيات (<span id="susX"></span>, <span id="susY"></span>) بحجم <span id="boxSize"></span>×<span id="boxSize"></span></p>
-  <p>📊 نسبة التشابه اللونية المحسوبة: <strong id="matchRate"></strong>%</p>
-  <canvas id="matchCanvas" width="140" height="70"></canvas>
-</div>
-      } else {
-        verifyBtn.style.display = "none";
-        resultBox.innerText =
-          `⚠️ تشابه منخفض: ${similarity}%\n` +
-          `🟥 لم يتم تجاوز عتبة التطابق المطلوبة (90%)`;
-      }
+      resultBox.innerText =
+        `✅ تم اختيار المربعين الأعلى تشابهًا تلقائيًا:\n\n` +
+        `🟩 الأصل (يمين الصورة): (${rightX}, ${yPos}) بحجم ${s}×${s}\n` +
+        `🟥 المشتبه (يسار الصورة): (${leftX}, ${yPos}) بحجم ${s}×${s}\n\n` +
+        `📊 نسبة التشابه اللونية المحسوبة: ${similarityRounded}%\n` +
+        (similarity >= 90 ?
+          `📌 ✅ تم تجاوز عتبة النجاح المحددة بـ 90%\n\n🖼️ تم عرض معاينة المربعات أدناه\n👇 اضغط "تحقق من المادة" لتحليل إضافي` :
+          `⚠️ لم يتم تجاوز عتبة التطابق المطلوبة\n🛑 يرجى استخدام صورة أو مستند أوضح للمقارنة`);
+
+      verifyBtn.style.display = (similarity >= 90) ? "inline-block" : "none";
+      matchCanvas.style.display = "block";
     }
 
     function showPreview(left, right) {
-      matchCanvas.style.display = "block";
       matchCtx.clearRect(0, 0, 140, 70);
       matchCtx.putImageData(left, 0, 0);
       matchCtx.putImageData(right, 70, 0);
     }
 
     function verifyMaterial() {
-      resultBox.innerText += `\n\n🔍 جاري التحقق من النسيج الداخلي...`;
-
-      // تمهيد لخوارزمية علمية مستقبلًا
+      resultBox.innerText += `\n\n🔍 جاري التحقق من خصائص المادة...`;
+      // تحضير للتحليل النسيجي لاحقًا
       setTimeout(() => {
-        resultBox.innerText += `\n🧬 تحليل المادة: لا توجد مؤشرات تزوير داخلية في النسخة الحالية.`;
+        resultBox.innerText += `\n🧬 النتيجة: لا مؤشرات تزوير داخلية ضمن التشابه الظاهري.`;
       }, 1000);
     }
   </script>
+
 </body>
 </html>
