@@ -91,7 +91,7 @@ function analyze() {
   const matchScore = 100 - Math.min((diffAvg + diffDev) / 2, 100);
 
   let resultText = `
-    📷 نسبة تشابه الشكل واللون: ${shapeSim.toFixed(1)}% ✅<br><br>
+    📷 نسبة تشابه الشكل واللون: ${shapeSim.toFixed(2)}% ✅<br><br>
     📦 يسار: avg = ${texture1.avg.toFixed(2)}, dev = ${texture1.dev.toFixed(2)}<br>
     📦 يمين: avg = ${texture2.avg.toFixed(2)}, dev = ${texture2.dev.toFixed(2)}<br><br>
     📊 تطابق نسيجي: ${matchScore.toFixed(1)}%<br>
