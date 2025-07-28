@@ -2,72 +2,95 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8" />
-  <title>أداة تحليل المادة</title>
+  <title>تحليل المادة | Rqeeb</title>
   <style>
-    body { font-family: sans-serif; direction: rtl; }
-    canvas { border: 1px solid #888; margin: 10px; }
-    .zone { display: flex; justify-content: space-around; flex-wrap: wrap; }
-    button { margin: 5px; padding: 10px; }
+    body { font-family: 'Tahoma'; text-align: center; background: #f5f5f5; direction: rtl; }
+    canvas, video { border: 2px solid #444; margin: 10px; }
+    #zoomCanvas { width: 200px; height: 200px; }
+    button { padding: 10px 20px; margin: 5px; font-size: 16px; }
   </style>
 </head>
 <body>
-  <h2>تحليل نسيجي لمادتين في نفس الصورة</h2>
-  <video id="video" width="320" height="240" autoplay></video>
-  <button onclick="capture()">📸 تصوير مباشر</button>
-  <canvas id="sourceCanvas" width="320" height="240"></canvas>
-  <div class="zone">
-    <canvas id="region1" width="100" height="100"></canvas>
-    <canvas id="region2" width="100" height="100"></canvas>
-  </div>
+
+  <h2>🧪 أداة تحليل المادة البصرية</h2>
+
+  <video id="video" width="400" autoplay></video><br>
+  <canvas id="canvas" width="400" height="300"></canvas><br>
+  <canvas id="zoomCanvas" width="200" height="200"></canvas><br>
+
+  <button onclick="capture()">📸 تصوير من الكاميرا</button>
   <button onclick="analyze()">🔍 تحليل ومطابقة</button>
-  <p id="result">نتيجة التحليل: </p>
+
+  <div id="result">📌 جاهز للتحليل</div>
 
   <script>
-    const video = document.getElementById('video');
-    const sourceCanvas = document.getElementById('sourceCanvas');
-    const region1 = document.getElementById('region1');
-    const region2 = document.getElementById('region2');
-    const result = document.getElementById('result');
+    const video = document.getElementById("video");
+    const canvas = document.getElementById("canvas");
+    const zoomCanvas = document.getElementById("zoomCanvas");
+    const ctx = canvas.getContext("2d");
 
-    navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
-      video.srcObject = stream;
-    });
-
-    function capture() {
-      sourceCanvas.getContext('2d').drawImage(video, 0, 0, sourceCanvas.width, sourceCanvas.height);
-      result.textContent = "📌 تم التقاط الصورة. اختر منطقتين للتحليل.";
+    async function openCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        video.srcObject = stream;
+        await video.play();
+      } catch (err) {
+        alert("⚠️ فشل فتح الكاميرا، تأكد من الأذونات أو استخدم صورة مرفوعة.");
+      }
     }
 
-    sourceCanvas.addEventListener('click', function(e) {
-      const rect = sourceCanvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      const context = sourceCanvas.getContext('2d');
-      const imageData = context.getImageData(x - 50, y - 50, 100, 100);
-      if (!region1.dataset.filled) {
-        region1.getContext('2d').putImageData(imageData, 0, 0);
-        region1.dataset.filled = "true";
-      } else {
-        region2.getContext('2d').putImageData(imageData, 0, 0);
-        region2.dataset.filled = "";
-      }
+    function capture() {
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    }
+
+    function drawBoxes() {
+      const boxSize = 150;
+      const y = (canvas.height - boxSize) / 2;
+      const gap = 20;
+      const x1 = canvas.width / 2 - boxSize - gap / 2;
+      const x2 = canvas.width / 2 + gap / 2;
+
+      ctx.strokeStyle = "#00aa88";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x1, y, boxSize, boxSize);
+      ctx.strokeRect(x2, y, boxSize, boxSize);
+
+      return [
+        { x: x1, y: y, w: boxSize, h: boxSize },
+        { x: x2, y: y, w: boxSize, h: boxSize }
+      ];
+    }
+
+    canvas.addEventListener("click", (e) => {
+      const x = e.offsetX;
+      const y = e.offsetY;
+      const zctx = zoomCanvas.getContext("2d");
+      zctx.clearRect(0, 0, zoomCanvas.width, zoomCanvas.height);
+      zctx.drawImage(canvas, x - 25, y - 25, 50, 50, 0, 0, zoomCanvas.width, zoomCanvas.height);
     });
 
     function analyze() {
-      const data1 = region1.getContext('2d').getImageData(0, 0, 100, 100).data;
-      const data2 = region2.getContext('2d').getImageData(0, 0, 100, 100).data;
+      const regions = drawBoxes();
+      const data1 = ctx.getImageData(regions[0].x, regions[0].y, regions[0].w, regions[0].h).data;
+      const data2 = ctx.getImageData(regions[1].x, regions[1].y, regions[1].w, regions[1].h).data;
 
-      let diff = 0;
+      let diff = 0, bright = 0;
       for (let i = 0; i < data1.length; i += 4) {
-        const gray1 = (data1[i] + data1[i + 1] + data1[i + 2]) / 3;
-        const gray2 = (data2[i] + data2[i + 1] + data2[i + 2]) / 3;
-        diff += Math.abs(gray1 - gray2);
+        const g1 = (data1[i] + data1[i+1] + data1[i+2]) / 3;
+        const g2 = (data2[i] + data2[i+1] + data2[i+2]) / 3;
+        diff += Math.abs(g1 - g2);
+        if (g1 > 200) bright++;
       }
 
-      const avgDiff = diff / (data1.length / 4);
-      const similarity = Math.max(0, 100 - avgDiff * 0.5);
-      result.textContent = `✅ نسبة التشابه النسيجي: ${similarity.toFixed(2)}٪`;
+      const score = 100 - Math.min(diff / (data1.length / 4), 100);
+      const reflect = Math.round((bright / (data1.length / 4)) * 100);
+
+      document.getElementById("result").innerText =
+        `✅ نسبة التشابه النسيجي: ${score.toFixed(1)}٪\n✨ انعكاس: ${reflect}%`;
     }
+
+    window.onload = openCamera;
   </script>
+
 </body>
 </html>
