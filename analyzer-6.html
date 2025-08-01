@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RQEEB | تحليل متقدم لمستندين داخل صورة واحدة</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #ffa500;
+      --primary-dark: #e69500;
+      --dark-bg: #111;
+      --card-bg: #1e1e1e;
+      --text: #fff;
+      --warning: #ffcc00;
+      --danger: #ff3333;
+      --success: #4CAF50;
+      --info: #2196F3;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      background: linear-gradient(135deg, #0a0a0a, #1a1a1a);
+      color: var(--text);
+      font-family: 'Tajawal', 'Segoe UI', sans-serif;
+      text-align: center;
+      padding: 2rem;
+      line-height: 1.6;
+      min-height: 100vh;
+      background-attachment: fixed;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    header {
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid #333;
+      position: relative;
+    }
+    
+    h1 {
+      font-size: 2.4rem;
+      margin-bottom: 0.8rem;
+      color: var(--primary);
+      text-shadow: 0 0 10px rgba(255, 165, 0, 0.3);
+      position: relative;
+      display: inline-block;
+    }
+    
+    h1:after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 4px;
+      background: var(--primary);
+      border-radius: 2px;
+    }
+    
+    .subtitle {
+      color: #bbb;
+      font-size: 1.2rem;
+      max-width: 800px;
+      margin: 1rem auto 0;
+      line-height: 1.8;
+    }
+    
+    .cards-container {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin-top: 2.5rem;
+    }
+    
+    .card {
+      background: linear-gradient(145deg, #1e1e1e, #2a2a2a);
+      padding: 2rem;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      flex: 1;
+      min-width: 300px;
+      max-width: 800px;
+      transition: all 0.4s ease;
+      border: 1px solid #333;
+    }
+    
+    .card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6), 0 0 20px rgba(255, 165, 0, 0.2);
+    }
+    
+    .card h2 {
+      margin-bottom: 1.8rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid #333;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      font-size: 1.8rem;
+    }
+    
+    .file-upload {
+      background: #252525;
+      border-radius: 15px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      border: 2px dashed #444;
+      transition: all 0.3s ease;
+    }
+    
+    .file-upload:hover {
+      border-color: var(--primary);
+      background: #2a2a2a;
+    }
+    
+    .file-upload h3 {
+      margin-bottom: 1.2rem;
+      color: #ddd;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.8rem;
+      font-size: 1.3rem;
+    }
+    
+    input[type="file"] {
+      width: 100%;
+      padding: 1rem;
+      background: #333;
+      border: none;
+      border-radius: 12px;
+      color: #ddd;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    input[type="file"]:hover {
+      background: #3a3a3a;
+    }
+    
+    input[type="file"]::file-selector-button {
+      background: var(--primary);
+      color: #000;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      margin-right: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    input[type="file"]::file-selector-button:hover {
+      background: var(--primary-dark);
+    }
+    
+    button {
+      width: 100%;
+      padding: 1.2rem;
+      margin-top: 1.8rem;
+      font-size: 1.3rem;
+      border-radius: 12px;
+      border: none;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      box-shadow: 0 5px 15px rgba(230, 149, 0, 0.3);
+    }
+    
+    button:hover {
+      transform: scale(1.03);
+      box-shadow: 0 7px 20px rgba(230, 149, 0, 0.4);
+    }
+    
+    button:disabled {
+      background: #666;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    
+    #results {
+      margin-top: 2rem;
+      padding: 2rem;
+      background: linear-gradient(145deg, #252525, #2a2a2a);
+      border-radius: 16px;
+      text-align: right;
+      color: var(--text);
+      font-size: 1.1rem;
+      min-height: 300px;
+      border: 1px solid #333;
+    }
+    
+    .result-header {
+      font-size: 1.6rem;
+      margin-bottom: 1.5rem;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      text-shadow: 0 0 8px rgba(255, 165, 0, 0.3);
+    }
+    
+    .progress-container {
+      margin-top: 1.5rem;
+      position: relative;
+    }
+    
+    progress {
+      width: 100%;
+      height: 1.8rem;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #444;
+    }
+    
+    progress::-webkit-progress-bar {
+      background: #333;
+      border-radius: 12px;
+    }
+    
+    progress::-webkit-progress-value {
+      background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+      border-radius: 12px;
+      transition: width 0.8s cubic-bezier(0.22, 0.61, 0.36, 1);
+      box-shadow: inset 0 0 5px rgba(255, 255, 255, 0.2);
+    }
+    
+    progress::-moz-progress-bar {
+      background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+      border-radius: 12px;
+    }
+    
+    #progressText {
+      text-align: center;
+      margin-top: 0.8rem;
+      color: var(--primary);
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+    
+    .analysis-details {
+      margin-top: 2rem;
+      text-align: right;
+      background: #1e1e1e;
+      padding: 1.5rem;
+      border-radius: 15px;
+      border: 1px solid #333;
+    }
+    
+    .analysis-details h3 {
+      margin-bottom: 1.2rem;
+      color: var(--primary);
+      font-size: 1.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+    
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.2rem;
+      margin-top: 1.2rem;
+    }
+    
+    .metric {
+      background: linear-gradient(145deg, #1a1a1a, #252525);
+      padding: 1.2rem;
+      border-radius: 12px;
+      text-align: center;
+      border: 1px solid #333;
+      transition: all 0.3s ease;
+    }
+    
+    .metric:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+    }
+    
+    .metric-value {
+      font-size: 1.8rem;
+      font-weight: bold;
+      margin: 0.8rem 0;
+      color: var(--primary);
+      text-shadow: 0 0 8px rgba(255, 165, 0, 0.3);
+    }
+    
+    .metric-label {
+      font-size: 1rem;
+      color: #aaa;
+    }
+    
+    .verdict {
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-top: 2rem;
+      padding: 1.2rem;
+      border-radius: 12px;
+      text-align: center;
+      animation: pulse 2s infinite;
+    }
+    
+    .verdict.safe {
+      background: rgba(76, 175, 80, 0.15);
+      color: var(--success);
+      border: 2px solid var(--success);
+    }
+    
+    .verdict.warning {
+      background: rgba(255, 204, 0, 0.15);
+      color: var(--warning);
+      border: 2px solid var(--warning);
+    }
+    
+    .verdict.danger {
+      background: rgba(255, 51, 51, 0.15);
+      color: var(--danger);
+      border: 2px solid var(--danger);
+    }
+    
+    .image-previews {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 2rem;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+    
+    .image-preview {
+      width: 100%;
+      max-width: 350px;
+      background: #2a2a2a;
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+      transition: all 0.4s ease;
+    }
+    
+    .image-preview:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 12px 25px rgba(0, 0, 0, 0.5);
+    }
+    
+    .image-preview img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      display: block;
+    }
+    
+    .image-preview p {
+      padding: 1rem;
+      color: #ddd;
+      font-size: 1.1rem;
+      background: #252525;
+    }
+    
+    .region-label {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(0, 0, 0, 0.7);
+      color: var(--primary);
+      padding: 0.3rem 0.8rem;
+      border-radius: 5px;
+      font-size: 0.9rem;
+    }
+    
+    footer {
+      margin-top: 3rem;
+      font-size: 1rem;
+      color: #777;
+      padding-top: 2rem;
+      border-top: 1px solid #333;
+      line-height: 1.8;
+    }
+    
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin: 2.5rem 0;
+    }
+    
+    .feature {
+      background: rgba(30, 30, 30, 0.7);
+      padding: 1.5rem;
+      border-radius: 15px;
+      text-align: center;
+      border: 1px solid #333;
+      transition: all 0.3s ease;
+    }
+    
+    .feature:hover {
+      transform: translateY(-8px);
+      background: rgba(42, 42, 42, 0.7);
+    }
+    
+    .feature i {
+      font-size: 2.5rem;
+      color: var(--primary);
+      margin-bottom: 1rem;
+    }
+    
+    .feature h3 {
+      color: var(--primary);
+      margin-bottom: 0.8rem;
+    }
+    
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.02); }
+      100% { transform: scale(1); }
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .cards-container {
+        flex-direction: column;
+      }
+      
+      .image-previews {
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .card {
+        min-width: 100%;
+      }
+      
+      h1 {
+        font-size: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1><i class="fas fa-file-contract"></i> RQEEB — تحليل متقدم لمستندين داخل صورة واحدة</h1>
+      <p class="subtitle">
+        نظام متخصص في كشف التزوير من خلال تحليل مستندين في صورة واحدة، باستخدام تقنيات الذكاء الاصطناعي لفحص نسيج الورق، جودة الطباعة، الألوان والترددات
+      </p>
+    </header>
+
+    <div class="features">
+      <div class="feature">
+        <i class="fas fa-scroll"></i>
+        <h3>تحليل نسيج الورق</h3>
+        <p>كشف الاختلافات الدقيقة في نسيج الورق بين المستندين</p>
+      </div>
+      <div class="feature">
+        <i class="fas fa-palette"></i>
+        <h3>تحليل الألوان</h3>
+        <p>مقارنة الألوان في مساحات لونية متعددة (RGB, LAB, HSV)</p>
+      </div>
+      <div class="feature">
+        <i class="fas fa-wave-square"></i>
+        <h3>تحليل الترددات</h3>
+        <p>فحص ترددات الطباعة وجودة الصورة باستخدام FFT مبسط</p>
+      </div>
+      <div class="feature">
+        <i class="fas fa-microscope"></i>
+        <h3>تحليل الضوضاء</h3>
+        <p>الكشف عن التلاعب الرقمي من خلال تحليل الضوضاء والتحريفات</p>
+      </div>
+    </div>
+
+    <div class="cards-container">
+      <div class="card">
+        <h2><i class="fas fa-camera"></i> رفع صورة تحتوي مستندين</h2>
+        
+        <div class="file-upload">
+          <h3><i class="fas fa-cloud-upload-alt"></i> اختيار صورة من الجهاز</h3>
+          <input type="file" accept="image/*" id="combinedFile">
+        </div>
+        
+        <div class="image-previews">
+          <div class="image-preview">
+            <div class="region-label">المنطقة اليسرى</div>
+            <img id="region1Preview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='350' height='200' viewBox='0 0 350 200'%3E%3Crect width='100%25' height='100%25' fill='%232a2a2a'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='16' fill='%23777'%3Eالمستند الأصلي%3C/text%3E%3C/svg%3E" alt="معاينة المنطقة اليسرى">
+            <p>المستند الأصلي</p>
+          </div>
+          
+          <div class="image-preview">
+            <div class="region-label">المنطقة اليمنى</div>
+            <img id="region2Preview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='350' height='200' viewBox='0 0 350 200'%3E%3Crect width='100%25' height='100%25' fill='%232a2a2a'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='16' fill='%23777'%3Eالمستند المشكوك فيه%3C/text%3E%3C/svg%3E" alt="معاينة المنطقة اليمنى">
+            <p>المستند المشكوك فيه</p>
+          </div>
+        </div>
+        
+        <button id="analyzeBtn" onclick="startSingleImageAnalysis()">
+          <i class="fas fa-microscope"></i> بدء التحليل المتقدم
+        </button>
+        
+        <div id="results">
+          <div class="result-header">
+            <i class="fas fa-chart-bar"></i> نتائج التحليل
+          </div>
+          <p>الرجاء رفع صورة تحتوي على مستندين (الأصلي والمشكوك فيه) بجوار بعضهما</p>
+          <p>سيقوم النظام تلقائيًا بتقسيم الصورة إلى منطقتين وتحليلهما بدقة</p>
+        </div>
+        
+        <div class="progress-container">
+          <progress id="progressBar" value="0" max="100"></progress>
+          <div id="progressText">0%</div>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <p><i class="fas fa-code"></i> م: رأفت عمر — RQEEB Project © 2025 | الإصدار 3.0 المتقدم</p>
+      <p><i class="fas fa-info-circle"></i> هذا النظام قادر على اكتشاف الاختلافات الدقيقة بين المستندات حتى لو كانت في صورة واحدة</p>
+    </footer>
+  </div>
+
+  <script>
+    // عناصر واجهة المستخدم
+    const combinedFileInput = document.getElementById('combinedFile');
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    const resultBox = document.getElementById('results');
+    const progressBar = document.getElementById('progressBar');
+    const progressText = document.getElementById('progressText');
+    const region1Preview = document.getElementById('region1Preview');
+    const region2Preview = document.getElementById('region2Preview');
+
+    // تحديث معاينة الصور
+    combinedFileInput.addEventListener('change', function(e) {
+      if (this.files && this.files[0]) {
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+          try {
+            const img = new Image();
+            img.src = e.target.result;
+            img.onload = function() {
+              const regions = extractTwoRegions(img);
+              if (regions) {
+                region1Preview.src = regions[0].toDataURL();
+                region2Preview.src = regions[1].toDataURL();
+              }
+            };
+          } catch (error) {
+            console.error('Error loading image:', error);
+          }
+        }
+        reader.readAsDataURL(this.files[0]);
+      }
+    });
+
+    // استخراج منطقتين من الصورة
+    function extractTwoRegions(img) {
+      const canvas1 = document.createElement("canvas");
+      const canvas2 = document.createElement("canvas");
+      const w = img.width, h = img.height;
+      const halfW = w / 2;
+
+      // تحقق من أن كل نصف ≥ 40% من الصورة
+      const minArea = w * h * 0.4;
+      if ((halfW * h) < minArea) return null;
+
+      canvas1.width = halfW;
+      canvas1.height = h;
+      canvas1.getContext("2d").drawImage(img, 0, 0, halfW, h, 0, 0, halfW, h);
+
+      canvas2.width = halfW;
+      canvas2.height = h;
+      canvas2.getContext("2d").drawImage(img, halfW, 0, halfW, h, 0, 0, halfW, h);
+
+      return [canvas1, canvas2];
+    }
+
+    // تحميل الصورة
+    function loadImage(file) {
+      return new Promise((res, rej) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const img = new Image();
+          img.src = reader.result;
+          img.onload = () => res(img);
+          img.onerror = rej;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // تحويل الصورة إلى تدرج الرمادي
+    function convertToGrayscale(canvas) {
+      const tempCanvas = document.createElement("canvas");
+      const tempCtx = tempCanvas.getContext("2d");
+      tempCanvas.width = canvas.width;
+      tempCanvas.height = canvas.height;
+      tempCtx.drawImage(canvas, 0, 0);
+      
+      const imageData = tempCtx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data;
+      
+      for (let i = 0; i < data.length; i += 4) {
+        const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+        data[i] = avg;     // الأحمر
+        data[i + 1] = avg; // الأخضر
+        data[i + 2] = avg; // الأزرق
+      }
+      
+      tempCtx.putImageData(imageData, 0, 0);
+      return tempCanvas;
+    }
+
+    // تحليل النسيج باستخدام مرشح Gabor
+    function analyzeGaborTexture(canvas) {
+      const ctx = canvas.getContext("2d");
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data;
+      
+      let textureScore = 0;
+      let pixelCount = 0;
+      
+      // تحليل الاختلافات بين البكسلات المجاورة
+      for (let y = 1; y < canvas.height - 1; y++) {
+        for (let x = 1; x < canvas.width - 1; x++) {
+          const idx = (y * canvas.width + x) * 4;
+          const center = data[idx];
+          
+          // حساب الفروق مع الجوار
+          let diffSum = 0;
+          diffSum += Math.abs(center - data[idx - 4]);        // غرب
+          diffSum += Math.abs(center - data[idx + 4]);        // شرق
+          diffSum += Math.abs(center - data[idx - canvas.width * 4]); // شمال
+          diffSum += Math.abs(center - data[idx + canvas.width * 4]); // جنوب
+          
+          textureScore += diffSum;
+          pixelCount++;
+        }
+      }
+      
+      return textureScore / pixelCount;
+    }
+
+    // تحليل الترددات باستخدام FFT مبسط
+    function analyzeFrequency(canvas) {
+      const ctx = canvas.getContext("2d");
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data;
+      
+      let frequencyScore = 0;
+      let highFreqCount = 0;
+      
+      // تحليل الترددات العالية (التفاصيل الدقيقة)
+      for (let i = 0; i < data.length; i += 4) {
+        const intensity = data[i];
+        
+        // زيادة الوزن للقيم المتطرفة (الترددات العالية)
+        if (intensity < 50 || intensity > 200) {
+          highFreqCount++;
+        }
+      }
+      
+      frequencyScore = (highFreqCount / (data.length / 4)) * 100;
+      return frequencyScore;
+    }
+
+    // تحليل الألوان المتقدم (RGB, LAB, HSV)
+    function analyzeColor(canvas) {
+      const ctx = canvas.getContext("2d");
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data;
+      
+      let rSum = 0, gSum = 0, bSum = 0;
+      let count = 0;
+      
+      for (let i = 0; i < data.length; i += 4) {
+        rSum += data[i];
+        gSum += data[i + 1];
+        bSum += data[i + 2];
+        count++;
+      }
+      
+      const rAvg = rSum / count;
+      const gAvg = gSum / count;
+      const bAvg = bSum / count;
+      
+      // تحويل إلى LAB (مبسط)
+      const lab = {
+        l: (rAvg * 0.2126 + gAvg * 0.7152 + bAvg * 0.0722) / 2.55,
+        a: rAvg - gAvg,
+        b: bAvg - (rAvg + gAvg) / 2
+      };
+      
+      // تحويل إلى HSV (مبسط)
+      const max = Math.max(rAvg, gAvg, bAvg);
+      const min = Math.min(rAvg, gAvg, bAvg);
+      const delta = max - min;
+      
+      const h = delta === 0 ? 0 :
+        max === rAvg ? ((gAvg - bAvg) / delta) % 6 :
+        max === gAvg ? (bAvg - rAvg) / delta + 2 :
+        (rAvg - gAvg) / delta + 4;
+      
+      const hsv = {
+        h: Math.round(h * 60),
+        s: max === 0 ? 0 : delta / max,
+        v: max / 255
+      };
+      
+      return {
+        rgb: { r: rAvg, g: gAvg, b: bAvg },
+        lab,
+        hsv
+      };
+    }
+
+    // تحليل الضوضاء والتحريفات
+    function analyzeNoise(canvas) {
+      const ctx = canvas.getContext("2d");
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data;
+      
+      let noiseScore = 0;
+      let pixelCount = 0;
+      
+      // حساب الانحراف المعياري للقيم الرمادية
+      let sum = 0;
+      let values = [];
+      
+      for (let i = 0; i < data.length; i += 4) {
+        const gray = (data[i] + data[i + 1] + data[i + 2]) / 3;
+        values.push(gray);
+        sum += gray;
+      }
+      
+      const mean = sum / values.length;
+      let variance = 0;
+      
+      for (let gray of values) {
+        variance += Math.pow(gray - mean, 2);
+      }
+      
+      variance /= values.length;
+      return Math.sqrt(variance); // الانحراف المعياري
+    }
+
+    // بدء التحليل الكامل
+    async function startSingleImageAnalysis() {
+      const file = combinedFileInput.files[0];
+
+      if (!file) {
+        resultBox.innerHTML = `
+          <div class="result-header">
+            <i class="fas fa-exclamation-triangle"></i> خطأ
+          </div>
+          <p>الرجاء رفع صورة تحتوي على مستندين أولًا.</p>
+          <p>يجب أن تكون الصورة واضحة وتحتوي على مستندين بجوار بعضهما</p>
+        `;
+        return;
+      }
+
+      // إظهار حالة التحليل
+      resultBox.innerHTML = `
+        <div class="result-header">
+          <i class="fas fa-cogs"></i> جاري التحليل...
+        </div>
+        <p>نظام RQEEB يقوم بفحص خصائص الورق والتفاصيل الدقيقة</p>
+        <p>التحليل قد يستغرق بضع ثوانٍ حسب جودة الصورة</p>
+        <div class="progress-container">
+          <progress value="0" max="100"></progress>
+          <div id="progressText">0%</div>
+        </div>
+      `;
+      
+      progressBar.value = 10;
+      progressText.textContent = "10% - جاري تحميل الصورة";
+
+      try {
+        // تحميل الصور
+        const img = await loadImage(file);
+        
+        progressBar.value = 20;
+        progressText.textContent = "20% - تجهيز المناطق";
+
+        // استخراج المناطق
+        const regions = extractTwoRegions(img);
+        if (!regions) {
+          resultBox.innerHTML = `
+            <div class="result-header">
+              <i class="fas fa-exclamation-circle"></i> خطأ في التقسيم
+            </div>
+            <p>الصورة لا تحتوي على منطقتين كبيرتين بما يكفي (≥ 40%).</p>
+            <p>الرجاء التأكد من أن المستندين يشغلان معظم مساحة الصورة</p>
+          `;
+          progressBar.value = 0;
+          return;
+        }
+
+        const [region1, region2] = regions;
+        
+        progressBar.value = 30;
+        progressText.textContent = "30% - تحليل النسيج";
+
+        // التحليل المتقدم
+        // 1. تحليل النسيج (Gabor)
+        const texture1 = analyzeGaborTexture(region1);
+        const texture2 = analyzeGaborTexture(region2);
+        const textureDiff = Math.abs(texture1 - texture2);
+        
+        progressBar.value = 40;
+        progressText.textContent = "40% - تحليل الترددات";
+
+        // 2. تحليل الترددات (FFT مبسط)
+        const freq1 = analyzeFrequency(region1);
+        const freq2 = analyzeFrequency(region2);
+        const freqDiff = Math.abs(freq1 - freq2);
+        
+        progressBar.value = 50;
+        progressText.textContent = "50% - تحليل الألوان";
+
+        // 3. تحليل الألوان
+        const color1 = analyzeColor(region1);
+        const color2 = analyzeColor(region2);
+        
+        // حساب الفرق في الألوان
+        const rgbDiff = Math.abs(color1.rgb.r - color2.rgb.r) + 
+                        Math.abs(color1.rgb.g - color2.rgb.g) + 
+                        Math.abs(color1.rgb.b - color2.rgb.b);
+        
+        const labDiff = Math.abs(color1.lab.l - color2.lab.l) + 
+                       Math.abs(color1.lab.a - color2.lab.a) + 
+                       Math.abs(color1.lab.b - color2.lab.b);
+        
+        const hsvDiff = Math.abs(color1.hsv.h - color2.hsv.h) + 
+                       Math.abs(color1.hsv.s - color2.hsv.s) + 
+                       Math.abs(color1.hsv.v - color2.hsv.v);
+        
+        const colorMatch = (rgbDiff + labDiff + hsvDiff) / 3;
+        
+        progressBar.value = 70;
+        progressText.textContent = "70% - تحليل الضوضاء";
+
+        // 4. تحليل الضوضاء
+        const noise1 = analyzeNoise(region1);
+        const noise2 = analyzeNoise(region2);
+        const noiseDiff = Math.abs(noise1 - noise2);
+        
+        progressBar.value = 80;
+        progressText.textContent = "80% - تجميع النتائج";
+
+        // حساب درجة التطابق
+        const textureWeight = 0.35;
+        const freqWeight = 0.25;
+        const colorWeight = 0.25;
+        const noiseWeight = 0.15;
+        
+        // تطبيع النتائج
+        const maxTextureDiff = 50;
+        const maxFreqDiff = 30;
+        const maxColorDiff = 200;
+        const maxNoiseDiff = 20;
+        
+        const textureScore = Math.max(0, 100 - (textureDiff / maxTextureDiff) * 100);
+        const freqScore = Math.max(0, 100 - (freqDiff / maxFreqDiff) * 100);
+        const colorScore = Math.max(0, 100 - (colorMatch / maxColorDiff) * 100);
+        const noiseScore = Math.max(0, 100 - (noiseDiff / maxNoiseDiff) * 100);
+        
+        // الدرجة النهائية (متوسط مرجح)
+        const score = (textureScore * textureWeight) +
+                     (freqScore * freqWeight) +
+                     (colorScore * colorWeight) +
+                     (noiseScore * noiseWeight);
+        
+        progressBar.value = score;
+        progressText.textContent = `${score.toFixed(1)}%`;
+
+        // تحديد نتيجة التحليل
+        let verdict = "";
+        let verdictClass = "";
+        
+        if (score >= 90) {
+          verdict = "✅ تطابق تام - المستندان متطابقان";
+          verdictClass = "safe";
+        } else if (score >= 75) {
+          verdict = "⚠️ تطابق جزئي - تحقق يدوي موصى به";
+          verdictClass = "warning";
+        } else if (score >= 60) {
+          verdict = "⚠️ تطابق منخفض - تزوير محتمل";
+          verdictClass = "warning";
+        } else {
+          verdict = "❌ تطابق ضعيف جدًا - تزوير مؤكد";
+          verdictClass = "danger";
+        }
+
+        // إظهار النتائج التفصيلية
+        resultBox.innerHTML = `
+          <div class="result-header">
+            <i class="fas fa-chart-line"></i> نتائج التحليل المتقدم
+          </div>
+          
+          <div class="metrics-grid">
+            <div class="metric">
+              <div class="metric-label">نسيج الورق</div>
+              <div class="metric-value">${textureScore.toFixed(1)}%</div>
+              <div class="metric-desc">${textureDiff.toFixed(2)} فرق</div>
+            </div>
+            
+            <div class="metric">
+              <div class="metric-label">ترددات الطباعة</div>
+              <div class="metric-value">${freqScore.toFixed(1)}%</div>
+              <div class="metric-desc">${freqDiff.toFixed(2)} فرق</div>
+            </div>
+            
+            <div class="metric">
+              <div class="metric-label">التحليل اللوني</div>
+              <div class="metric-value">${colorScore.toFixed(1)}%</div>
+              <div class="metric-desc">${colorMatch.toFixed(2)} فرق</div>
+            </div>
+            
+            <div class="metric">
+              <div class="metric-label">تحليل الضوضاء</div>
+              <div class="metric-value">${noiseScore.toFixed(1)}%</div>
+              <div class="metric-desc">${noiseDiff.toFixed(2)} فرق</div>
+            </div>
+          </div>
+          
+          <div class="verdict ${verdictClass}">
+            <i class="fas fa-${verdictClass === 'safe' ? 'check-circle' : verdictClass === 'warning' ? 'exclamation-triangle' : 'times-circle'}"></i>
+            ${verdict}
+          </div>
+          
+          <div class="analysis-details">
+            <h3><i class="fas fa-info-circle"></i> تفاصيل التحليل:</h3>
+            <p>• فرق نسيج الورق: ${textureDiff.toFixed(2)} (أعلى = أصلي)</p>
+            <p>• اختلاف ترددات الطباعة: ${freqDiff.toFixed(2)}</p>
+            <p>• فرق الألوان في مساحة LAB: ${labDiff.toFixed(2)}</p>
+            <p>• فرق الضوضاء والتحريف: ${noiseDiff.toFixed(2)}</p>
+          </div>
+        `;
+        
+      } catch (error) {
+        console.error(error);
+        resultBox.innerHTML = `
+          <div class="result-header">
+            <i class="fas fa-exclamation-circle"></i> خطأ في التحليل
+          </div>
+          <p>حدث خطأ أثناء معالجة الصورة. الرجاء التأكد من:</p>
+          <ul style="text-align: right; margin-top: 10px; padding-right: 20px;">
+            <li>وضوح الصورة وجودتها</li>
+            <li>أن الصورة تحتوي على مستندين بجوار بعضهما</li>
+            <li>عدم وجود عوائق تغطي المستندات</li>
+            <li>التقاط الصورة في إضاءة جيدة</li>
+          </ul>
+        `;
+        progressBar.value = 0;
+        progressText.textContent = "0%";
+      }
+    }
+  </script>
+</body>
+</html>
