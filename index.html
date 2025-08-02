@@ -13,18 +13,25 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: space-between;
       min-height: 100vh;
+      padding: 2rem;
     }
 
-    h1 {
-      font-size: 3.5rem;
-      margin-bottom: 2rem;
-      color: #1e1e2f;
-      text-shadow: 2px 2px 5px rgba(0,0,0,0.15);
-      background: linear-gradient(90deg, #3742fa, #4cd137);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+    header {
+      text-align: center;
+    }
+
+    .logo {
+      width: 160px;
+      height: auto;
+      margin-bottom: 1rem;
+    }
+
+    .description {
+      font-size: 1.2rem;
+      color: #2f3542;
+      margin-bottom: 3rem;
     }
 
     .grid-container {
@@ -65,10 +72,21 @@
       font-size: 1.1rem;
       color: #2f3542;
     }
+
+    footer {
+      margin-top: 3rem;
+      font-size: 0.9rem;
+      color: #888;
+    }
   </style>
 </head>
 <body>
-  <h1>RQEEB</h1>
+
+  <header>
+    <img src="RQEEB-Logo.png" alt="RQEEB Logo" class="logo" />
+    <div class="description">نظام ذكي لتحليل المستندات والتأكد من صحتها</div>
+  </header>
+
   <div class="grid-container">
     <a href="analyzer-1.html" class="card-link">
       <div class="card">
@@ -103,5 +121,10 @@
       </div>
     </a>
   </div>
+
+  <footer>
+    تصميم وتطوير: المطور [اسمك الكريم]
+  </footer>
+
 </body>
 </html>
