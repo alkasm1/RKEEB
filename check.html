@@ -1,141 +1,229 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <title>RKEEB | تحليل الصور</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="/src/style.css">
-  <script src="/src/logic/hash-basic.js"></script>
-  <script src="/src/logic/similarity.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RQEEB | منصة التحقق البصري الذكي</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Tajawal', sans-serif;
+      background-color: #000;
+      color: #fff;
+    }
+
+    .container {
+      padding: 40px 20px;
+      max-width: 1000px;
+      margin: auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 50px;
+    }
+
+    .logo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo i {
+      font-size: 50px;
+      color: #ff8800;
+    }
+
+    h1 {
+      font-size: 42px;
+      margin: 0;
+    }
+
+    .subtitle {
+      color: #ccc;
+      font-size: 18px;
+      margin-top: 15px;
+    }
+
+    .developer {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #888;
+    }
+
+    .advanced-analysis-section {
+      margin-top: 60px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      justify-content: center;
+    }
+
+    .section-title i {
+      color: #ff8800;
+      font-size: 24px;
+    }
+
+    .section-title h2 {
+      margin: 0;
+      font-size: 24px;
+      color: #fff;
+    }
+
+    .analysis-card {
+      background-color: #111;
+      padding: 25px;
+      border-radius: 12px;
+      margin-bottom: 25px;
+      box-shadow: 0 0 10px rgba(255, 136, 0, 0.1);
+      transition: 0.3s ease;
+    }
+
+    .analysis-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 0 15px rgba(255, 136, 0, 0.2);
+    }
+
+    .analysis-icon-rectangle {
+      width: 40px;
+      height: 20px;
+      background-color: #ff8800;
+      border-radius: 4px;
+      margin-bottom: 15px;
+    }
+
+    .analysis-title {
+      font-size: 20px;
+      margin: 0 0 10px;
+    }
+
+    .analysis-card p {
+      color: #bbb;
+      margin-bottom: 15px;
+      font-size: 15px;
+    }
+
+    .analysis-btn {
+      display: inline-block;
+      background-color: #ff8800;
+      color: #000;
+      padding: 10px 20px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .analysis-btn i {
+      margin-left: 5px;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 60px;
+      color: #666;
+      font-size: 14px;
+    }
+
+    .social-icons a {
+      color: #888;
+      margin: 0 10px;
+      font-size: 18px;
+    }
+
+    .footer-logo i {
+      font-size: 32px;
+      color: #ff8800;
+      margin-bottom: 10px;
+    }
+
+    .footer-developer {
+      font-size: 15px;
+      color: #aaa;
+      margin: 10px 0;
+    }
+  </style>
 </head>
-<body class="verify">
-  <h2>🔬 تحليل ومقارنة الصور</h2>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">
+        <i class="fas fa-eye"></i>
+        <h1>نظام RQEEB للتحقق البصري الذكي</h1>
+      </div>
+      <p class="subtitle">
+        منصة متطورة للكشف عن التزوير في المستندات باستخدام تقنيات الذكاء الاصطناعي المتقدمة.
+        قم بمقارنة المستندات وتحديد التزوير بدقة عالية مع نظام RQEEB المتكامل.
+      </p>
+      <div class="developer">م: رأفت عمر</div>
+    </header>
 
-  <!-- القسم التقليدي: صورتين منفصلتين -->
-  <label>📸 صورة الأصل</label><br>
-  <input type="file" id="originalImage" accept="image/*"><br>
+    <div class="advanced-analysis-section">
+      <div class="section-title">
+        <i class="fas fa-chart-line"></i>
+        <h2>التحليلات المتقدمة</h2>
+      </div>
+      <p style="text-align: center; color: #bbb; margin-bottom: 20px; font-size: 1.1rem;">
+        وحدات تحليل متخصصة لتقنيات كشف التزوير باستخدام أساليب متطورة
+      </p>
 
-  <label>🖼️ صورة للتحقق</label><br>
-  <input type="file" id="checkImage" accept="image/*"><br><br>
+      <div class="analysis-card">
+        <div class="analysis-icon-rectangle"></div>
+        <h3 class="analysis-title">التحليل المتقدم 5</h3>
+        <p>طرق متعددة للتحقق من صحة المستندات بتقنيات حديثة</p>
+        <a href="analyzer-5.html" class="analysis-btn">
+          <i class="fas fa-play"></i> تشغيل التحليل
+        </a>
+      </div>
 
-  <button onclick="compareImages()">تحليل الصورتين</button>
+      <div class="analysis-card">
+        <div class="analysis-icon-rectangle"></div>
+        <h3 class="analysis-title">التحليل المتقدم 6</h3>
+        <p>مقارنة المستندات بنفس الصورة لاكتشاف الاختلافات الدقيقة</p>
+        <a href="analyzer-6.html" class="analysis-btn">
+          <i class="fas fa-play"></i> تشغيل التحليل
+        </a>
+      </div>
 
-  <hr><br>
+      <div class="analysis-card">
+        <div class="analysis-icon-rectangle"></div>
+        <h3 class="analysis-title">التحليل المتقدم 7</h3>
+        <p>تحليل بصورة مباشرة للكشف الفوري عن التزوير</p>
+        <a href="analyzer-7.html" class="analysis-btn">
+          <i class="fas fa-play"></i> تشغيل التحليل
+        </a>
+      </div>
 
-  <!-- القسم الجديد: صورة تحتوي الأصل والمُشتبه به -->
-  <h3>🖼️ تحقق من صورة واحدة تحتوي الأصل والمُشتبه به</h3>
-  <input type="file" id="singleImage" accept="image/*"><br><br>
-  <button onclick="triggerSingle()">تحليل الصورة الموحدة</button>
+      <div class="analysis-card">
+        <div class="analysis-icon-rectangle"></div>
+        <h3 class="analysis-title">التحليل المتقدم 8</h3>
+        <p>تحليل دقيق ومفصل للمستندات بدرجة عالية من الدقة</p>
+        <a href="analyzer-8.html" class="analysis-btn">
+          <i class="fas fa-play"></i> تشغيل التحليل
+        </a>
+      </div>
+    </div>
 
-  <div id="resultMessage"></div>
-  <progress id="matchProgress" value="0" max="100"></progress>
-
-  <!-- الأكواد المنطقية -->
-  <script>
-    async function calculateHash(file) {
-      const arrayBuffer = await file.arrayBuffer();
-      const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer);
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    }
-
-    function calculateSimilarity(hashA, hashB) {
-      let match = 0;
-      for (let i = 0; i < hashA.length; i++) {
-        if (hashA[i] === hashB[i]) match++;
-      }
-      return Math.floor((match / hashA.length) * 100);
-    }
-
-    async function compareImages() {
-      const original = document.getElementById('originalImage').files[0];
-      const check = document.getElementById('checkImage').files[0];
-      const result = document.getElementById('resultMessage');
-      const progress = document.getElementById('matchProgress');
-
-      if (!original || !check) {
-        result.innerText = "⚠️ يرجى رفع الصورتين";
-        return;
-      }
-
-      const hash1 = await calculateHash(original);
-      const hash2 = await calculateHash(check);
-      const percent = calculateSimilarity(hash1, hash2);
-
-      progress.value = percent;
-      if (percent >= 90) result.innerText = `✅ تطابق ${percent}% - الأصل مؤكد`;
-      else if (percent >= 70) result.innerText = `⚠️ تطابق ${percent}% - تحقق يدوي`;
-      else result.innerText = `❌ تطابق ${percent}% - محتمل تزوير`;
-    }
-
-    function triggerSingle() {
-      const file = document.getElementById('singleImage').files[0];
-      analyzeSingleImage(file);
-    }
-
-    async function analyzeSingleImage(file) {
-      const result = document.getElementById('resultMessage');
-      const progress = document.getElementById('matchProgress');
-
-      if (!file) {
-        result.innerText = "⚠️ يرجى اختيار صورة تحتوي الأصل والمُشتبه به معًا";
-        return;
-      }
-
-      result.innerText = "⏳ جاري التحليل...";
-
-      const hashLeft = await calculateHalfHash(file, 'left');
-      const hashRight = await calculateHalfHash(file, 'right');
-      const percent = calculateSimilarity(hashLeft, hashRight);
-
-      progress.value = percent;
-      if (percent >= 90) result.innerText = `✅ تطابق ${percent}% - مطابق تمامًا`;
-      else if (percent >= 70) result.innerText = `⚠️ تطابق ${percent}% - تحقق يدوي`;
-      else result.innerText = `❌ تطابق ${percent}% - محتمل تزوير`;
-    }
-
-    async function calculateHalfHash(file, side = 'left') {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-          const img = new Image();
-          img.src = reader.result;
-
-          img.onload = () => {
-            const canvas = document.createElement("canvas");
-            const ctx = canvas.getContext("2d");
-
-            const halfWidth = img.width / 2;
-            const height = img.height;
-
-            canvas.width = 300;
-            canvas.height = 300;
-
-            const sx = side === 'left' ? 0 : halfWidth;
-            ctx.drawImage(img, sx, 0, halfWidth, height, 0, 0, 300, 300);
-
-            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const data = imageData.data;
-            for (let i = 0; i < data.length; i += 4) {
-              const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
-              data[i] = data[i + 1] = data[i + 2] = avg;
-            }
-            ctx.putImageData(imageData, 0, 0);
-
-            canvas.toBlob(async (blob) => {
-              const arrayBuffer = await blob.arrayBuffer();
-              const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer);
-              const hashArray = Array.from(new Uint8Array(hashBuffer));
-              const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-              resolve(hashHex);
-            }, 'image/png');
-          };
-          img.onerror = reject;
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-    }
-  </script>
+    <footer>
+      <div class="footer-logo">
+        <i class="fas fa-shield-alt"></i>
+      </div>
+      <div class="footer-developer">م: رأفت عمر</div>
+      <p>نظام RQEEB المتقدم للتحقق البصري الذكي</p>
+      <p>الإصدار 4.0 | جميع الحقوق محفوظة © 2025</p>
+      <div class="social-icons">
+        <a href="#"><i class="fab fa-twitter"></i></a>
+        <a href="#"><i class="fab fa-github"></i></a>
+        <a href="#"><i class="fab fa-linkedin"></i></a>
+        <a href="#"><i class="fab fa-youtube"></i></a>
+      </div>
+    </footer>
+  </div>
 </body>
 </html>
