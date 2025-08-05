@@ -1,6 +1,161 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RQEEB | التحليل المباشر والفوري للتزوير</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'cairo': ['Cairo', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#ffa500',
+                        'primary-dark': '#e69500',
+                        warning: '#ffcc00',
+                        danger: '#ff3333',
+                        success: '#4CAF50',
+                        info: '#2196F3',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a, #1a1a1a);
+            background-attachment: fixed;
+        }
+        
+        .glow-effect {
+            box-shadow: 0 0 20px rgba(255, 165, 0, 0.3);
+        }
+        
+        .pulse-animation {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .7; }
+        }
+        
+        .scanning-line {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .scanning-line::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 165, 0, 0.4), transparent);
+            animation: scan 2s linear infinite;
+        }
+        
+        @keyframes scan {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        
+        .real-time-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(76, 175, 80, 0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            border: 1px solid #4CAF50;
+        }
+        
+        .real-time-dot {
+            width: 8px;
+            height: 8px;
+            background: #4CAF50;
+            border-radius: 50%;
+            animation: blink 1s ease-in-out infinite alternate;
+        }
+        
+        @keyframes blink {
+            from { opacity: 1; }
+            to { opacity: 0.3; }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+    <!-- Header -->
+    <header class="bg-gray-800 shadow-2xl border-b border-orange-500/20">
+        <div class="container mx-auto px-6 py-8">
+            <div class="text-center">
+                <h1 class="text-5xl font-bold text-orange-500 mb-4 glow-effect">
+                    <i class="fas fa-bolt mr-4"></i>RQEEB
+                </h1>
+                <h2 class="text-3xl font-semibold mb-4">التحليل المباشر والفوري للتزوير</h2>
+                <p class="text-xl text-gray-300 max-w-4xl mx-auto leading-relaxed">
+                    نظام متطور للكشف الفوري عن التزوير باستخدام تقنيات الذكاء الاصطناعي المتقدمة والتحليل في الوقت الفعلي
+                </p>
+                <div class="mt-6">
+                    <span class="real-time-indicator">
+                        <div class="real-time-dot"></div>
+                        <span class="text-green-400 font-semibold">نظام التحليل الفوري نشط</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 py-12">
+        <!-- Quick Analysis Features -->
+        <section class="mb-12">
+            <h3 class="text-3xl font-bold text-center mb-8 text-orange-500">مميزات التحليل الفوري</h3>
+            <div class="grid md:grid-cols-4 gap-6">
+                <div class="bg-gray-800 p-6 rounded-2xl border border-gray-700 hover:border-orange-500 transition-all duration-300 hover:glow-effect">
+                    <div class="text-center">
+                        <i class="fas fa-clock text-4xl text-green-500 mb-4"></i>
+                        <h4 class="text-xl font-semibold mb-2">سرعة فائقة</h4>
+                        <p class="text-gray-400">نتائج في أقل من 3 ثواني</p>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-800 p-6 rounded-2xl border border-gray-700 hover:border-orange-500 transition-all duration-300 hover:glow-effect">
+                    <div class="text-center">
+                        <i class="fas fa-eye text-4xl text-blue-500 mb-4"></i>
+                        <h4 class="text-xl font-semibold mb-2">كشف فوري</h4>
+                        <p class="text-gray-400">تحليل لحظي أثناء الرفع</p>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-800 p-6 rounded-2xl border border-gray-700 hover:border-orange-500 transition-all duration-300 hover:glow-effect">
+                    <div class="text-center">
+                        <i class="fas fa-brain text-4xl text-purple-500 mb-4"></i>
+                        <h4 class="text-xl font-semibold mb-2">ذكاء اصطناعي</h4>
+                        <p class="text-gray-400">خوارزميات متطورة</p>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-800 p-6 rounded-2xl border border-gray-700 hover:border-orange-500 transition-all duration-300 hover:glow-effect">
+                    <div class="text-center">
+                        <i class="fas fa-shield-alt text-4xl text-orange-500 mb-4"></i>
+                        <h4 class="text-xl font-semibold mb-2">دقة عالية</h4>
+                        <p class="text-gray-400">معدل دقة 98.5%</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>RQEEB | منصة التحقق البصري الذكي</title>
@@ -408,7 +563,7 @@
         منصة متطورة للكشف عن التزوير في المستندات باستخدام تقنيات الذكاء الاصطناعي المتقدمة.
         قم بمقارنة المستندات وتحديد التزوير بدقة عالية مع نظام RQEEB المتكامل.
       </p>
-      <div class="developer">م: رأفت عمر</div>
+      
     </header>
     
     <div class="features-grid">
