@@ -5,29 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>RQEEB | نظام التحليل الفوري للتزوير</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --primary: #00f0ff;
-      --primary-dark: #00a6b3;
-      --secondary: #ff8800;
-      --dark-bg: #0a0a1a;
-      --darker-bg: #050511;
-      --card-bg: rgba(15, 30, 45, 0.7);
-      --text: #f0f0f0;
-      --text-light: #bbbbbb;
-    }
-    
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: 'Cairo', sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
     
     body {
-      background: linear-gradient(135deg, var(--darker-bg), var(--dark-bg));
-      color: var(--text);
+      background: linear-gradient(135deg, #0a0a1a, #121212);
+      color: #ffffff;
       min-height: 100vh;
       padding: 20px;
       overflow-x: hidden;
@@ -42,11 +30,12 @@
       padding: 20px;
     }
     
+    /* Header Styles */
     header {
       text-align: center;
       margin-bottom: 40px;
       padding: 30px 20px;
-      background: linear-gradient(135deg, rgba(0, 240, 255, 0.1), rgba(15, 30, 45, 0.7));
+      background: rgba(15, 30, 45, 0.7);
       border-radius: 20px;
       box-shadow: 0 0 40px rgba(0, 240, 255, 0.3);
       border: 1px solid rgba(0, 240, 255, 0.3);
@@ -70,7 +59,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 15px;
+      gap: 10px;
       margin-bottom: 15px;
       position: relative;
       z-index: 1;
@@ -78,24 +67,23 @@
     
     .logo-icon {
       font-size: 4rem;
-      color: var(--primary);
-      margin-bottom: 15px;
+      color: #00f0ff;
+      margin-bottom: 10px;
       animation: pulse 3s infinite;
       text-shadow: 0 0 20px rgba(0, 240, 255, 0.7);
     }
     
     h1 {
       font-size: 2.8rem;
-      background: linear-gradient(to right, var(--primary), #aaf0ff);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      color: #00f0ff;
       margin-bottom: 10px;
       letter-spacing: -1px;
+      text-shadow: 0 0 15px rgba(0, 240, 255, 0.5);
     }
     
     .subtitle {
       font-size: 1.3rem;
-      color: var(--text-light);
+      color: #bbbbbb;
       max-width: 800px;
       margin: 0 auto;
       line-height: 1.8;
@@ -116,6 +104,7 @@
       margin: 20px auto 0;
       position: relative;
       z-index: 1;
+      border: 1px solid rgba(0, 240, 255, 0.3);
     }
     
     .status-indicator {
@@ -134,8 +123,8 @@
       padding: 10px 20px;
       border-radius: 30px;
       font-size: 1.1rem;
-      color: var(--primary);
-      border: 1px solid var(--primary);
+      color: #00f0ff;
+      border: 1px solid #00f0ff;
       backdrop-filter: blur(5px);
       z-index: 1;
     }
@@ -148,23 +137,24 @@
       padding: 10px 20px;
       border-radius: 30px;
       font-size: 1.1rem;
-      color: var(--secondary);
-      border: 1px solid var(--secondary);
+      color: #ff8800;
+      border: 1px solid #ff8800;
       backdrop-filter: blur(5px);
       z-index: 1;
     }
     
+    /* Features Section */
     .features-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
       gap: 25px;
       margin-bottom: 40px;
     }
     
     .feature-card {
-      background: var(--card-bg);
-      border-radius: 20px;
-      padding: 30px 25px;
+      background: rgba(15, 30, 45, 0.7);
+      border-radius: 15px;
+      padding: 25px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
       border: 1px solid rgba(0, 240, 255, 0.2);
       transition: all 0.4s ease;
@@ -183,7 +173,7 @@
       left: 0;
       width: 100%;
       height: 4px;
-      background: linear-gradient(90deg, var(--primary), transparent);
+      background: linear-gradient(90deg, #00f0ff, transparent);
       transform: translateX(-100%);
       transition: transform 0.4s ease;
     }
@@ -191,7 +181,7 @@
     .feature-card:hover {
       transform: translateY(-10px);
       box-shadow: 0 15px 40px rgba(0, 240, 255, 0.4);
-      border-color: var(--primary);
+      border-color: #00f0ff;
     }
     
     .feature-card:hover::after {
@@ -199,73 +189,29 @@
     }
     
     .feature-icon {
-      font-size: 3.2rem;
-      color: var(--primary);
+      font-size: 2.5rem;
+      color: #00f0ff;
       margin-bottom: 20px;
       text-shadow: 0 0 15px rgba(0, 240, 255, 0.5);
     }
     
     .feature-title {
-      font-size: 1.7rem;
-      color: var(--primary);
+      font-size: 1.5rem;
+      color: #00f0ff;
       margin-bottom: 15px;
     }
     
     .feature-desc {
-      color: var(--text-light);
+      color: #bbbbbb;
       font-size: 1.1rem;
       line-height: 1.7;
       margin-bottom: 20px;
       flex-grow: 1;
     }
     
-    .feature-btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      padding: 12px 28px;
-      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-      color: #000;
-      font-weight: bold;
-      border-radius: 50px;
-      text-decoration: none;
-      font-size: 1.1rem;
-      transition: all 0.3s;
-      box-shadow: 0 5px 15px rgba(0, 240, 255, 0.4);
-      border: none;
-      cursor: pointer;
-      width: 100%;
-      max-width: 250px;
-      position: relative;
-      z-index: 1;
-      overflow: hidden;
-    }
-    
-    .feature-btn::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
-      opacity: 0;
-      transition: opacity 0.3s ease;
-      z-index: -1;
-    }
-    
-    .feature-btn:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 20px rgba(0, 240, 255, 0.6);
-    }
-    
-    .feature-btn:hover::before {
-      opacity: 1;
-    }
-    
+    /* Main Upload Section */
     .main-section {
-      background: var(--card-bg);
+      background: rgba(15, 30, 45, 0.7);
       border-radius: 20px;
       padding: 30px;
       margin-bottom: 40px;
@@ -292,7 +238,7 @@
       gap: 15px;
       margin-bottom: 30px;
       font-size: 2rem;
-      color: var(--primary);
+      color: #00f0ff;
       justify-content: center;
       position: relative;
       z-index: 1;
@@ -302,312 +248,124 @@
       font-size: 2rem;
     }
     
-    .cards-container {
+    .upload-container {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 25px;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
       position: relative;
       z-index: 1;
     }
     
-    .card {
-      background: rgba(30, 40, 50, 0.4);
+    @media (max-width: 768px) {
+      .upload-container {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    .upload-area {
+      background: rgba(20, 40, 60, 0.5);
       border-radius: 15px;
-      padding: 25px;
-      border: 1px solid rgba(0, 240, 255, 0.2);
+      padding: 40px 30px;
+      border: 2px dashed rgba(0, 240, 255, 0.3);
       transition: all 0.3s;
       position: relative;
       overflow: hidden;
-    }
-    
-    .card::after {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: radial-gradient(circle at top right, rgba(0, 240, 255, 0.1), transparent 70%);
-      z-index: 0;
-    }
-    
-    .card:hover {
-      transform: translateY(-5px);
-      border-color: var(--primary);
-      box-shadow: 0 10px 25px rgba(0, 240, 255, 0.3);
-    }
-    
-    .card-title {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 15px;
-      color: var(--primary);
-      font-size: 1.4rem;
-      position: relative;
-      z-index: 1;
-    }
-    
-    .card-content {
-      margin-bottom: 20px;
-      color: var(--text-light);
-      line-height: 1.7;
-      position: relative;
-      z-index: 1;
-    }
-    
-    .file-drop-area {
-      width: 100%;
-      padding: 40px 20px;
-      margin: 15px 0;
-      border-radius: 10px;
-      border: 2px dashed rgba(0, 240, 255, 0.3);
-      background: rgba(10, 20, 30, 0.5);
-      color: var(--text);
-      cursor: pointer;
-      transition: all 0.3s;
-      position: relative;
-      z-index: 1;
       text-align: center;
+      cursor: pointer;
+      min-height: 300px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
     }
     
-    .file-drop-area:hover {
-      border-color: var(--primary);
+    .upload-area:hover {
+      border-color: #00f0ff;
       background: rgba(0, 240, 255, 0.1);
     }
     
-    .file-drop-area i {
-      font-size: 3rem;
-      color: var(--primary);
-      margin-bottom: 15px;
-      display: block;
+    .upload-area i {
+      font-size: 4rem;
+      color: #00f0ff;
+      margin-bottom: 20px;
+      text-shadow: 0 0 15px rgba(0, 240, 255, 0.5);
     }
     
-    .card-btn {
-      width: 100%;
-      padding: 15px;
+    .upload-title {
+      font-size: 1.5rem;
+      color: #00f0ff;
+      margin-bottom: 15px;
+    }
+    
+    .upload-desc {
+      color: #bbbbbb;
       font-size: 1.1rem;
-      border-radius: 10px;
-      border: none;
-      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-      color: #000;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.3s;
-      box-shadow: 0 5px 15px rgba(0, 240, 255, 0.4);
-      margin-top: 15px;
-      position: relative;
-      z-index: 1;
-      overflow: hidden;
+      line-height: 1.7;
+      margin-bottom: 20px;
     }
     
-    .card-btn::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
-      opacity: 0;
-      transition: opacity 0.3s ease;
-      z-index: -1;
-    }
-    
-    .card-btn:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 20px rgba(0, 240, 255, 0.6);
-    }
-    
-    .card-btn:hover::before {
-      opacity: 1;
-    }
-    
-    .progress-container {
-      background: rgba(10, 20, 30, 0.7);
-      border-radius: 10px;
-      height: 20px;
-      overflow: hidden;
-      border: 1px solid rgba(0, 240, 255, 0.2);
-      margin: 20px 0;
-      position: relative;
-      z-index: 1;
-    }
-    
-    .progress-bar {
-      height: 100%;
-      background: linear-gradient(90deg, var(--primary), var(--primary-dark));
-      border-radius: 10px;
-      transition: width 0.5s ease;
-      box-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
-    }
-    
-    .result-message {
-      text-align: center;
-      font-size: 1.3rem;
-      padding: 15px;
-      border-radius: 10px;
-      background: rgba(10, 20, 30, 0.7);
-      border: 1px solid rgba(0, 240, 255, 0.2);
-      margin-top: 20px;
-      min-height: 60px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      z-index: 1;
-      transition: all 0.4s;
-    }
-    
-    .advanced-analysis-section {
-      margin-top: 40px;
-    }
-    
-    .analysis-cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-      gap: 20px;
-      margin-top: 20px;
-    }
-    
-    .analysis-card {
-      background: var(--card-bg);
-      border-radius: 15px;
-      padding: 25px 20px;
-      text-align: center;
-      border: 1px solid rgba(0, 240, 255, 0.2);
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-      transition: all 0.3s ease;
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .analysis-card::after {
-      content: "";
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      height: 3px;
-      background: linear-gradient(90deg, var(--primary), transparent);
-      transform: translateX(-100%);
-      transition: transform 0.4s ease;
-    }
-    
-    .analysis-card:hover {
-      transform: translateY(-8px);
-      box-shadow: 0 12px 30px rgba(0, 240, 255, 0.3);
-      border-color: var(--primary);
-    }
-    
-    .analysis-card:hover::after {
-      transform: translateX(0);
-    }
-    
-    .analysis-icon {
-      font-size: 2.5rem;
-      color: var(--primary);
-      margin-bottom: 15px;
-      text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
-    }
-    
-    .analysis-title {
-      font-size: 1.4rem;
-      color: var(--primary);
+    .upload-area p {
+      color: #bbbbbb;
+      font-size: 1.1rem;
+      line-height: 1.7;
       margin-bottom: 10px;
     }
     
-    .analysis-card p {
-      color: var(--text-light);
-      margin-bottom: 20px;
-      line-height: 1.6;
-    }
-    
-    .analysis-btn {
+    .upload-btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 10px;
-      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      padding: 12px 28px;
+      background: linear-gradient(135deg, #00f0ff, #00a6b3);
       color: #000;
-      padding: 12px 25px;
-      border-radius: 50px;
       font-weight: bold;
+      border-radius: 50px;
       text-decoration: none;
-      font-size: 1rem;
-      transition: all 0.3s ease;
+      font-size: 1.1rem;
+      transition: all 0.3s;
       box-shadow: 0 5px 15px rgba(0, 240, 255, 0.4);
+      border: none;
+      cursor: pointer;
+      width: 100%;
+      max-width: 250px;
+      margin-top: 20px;
       position: relative;
       z-index: 1;
       overflow: hidden;
     }
     
-    .analysis-btn::before {
+    .upload-btn::before {
       content: "";
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+      background: linear-gradient(135deg, #00a6b3, #00f0ff);
       opacity: 0;
       transition: opacity 0.3s ease;
       z-index: -1;
     }
     
-    .analysis-btn:hover {
+    .upload-btn:hover {
       transform: translateY(-3px);
       box-shadow: 0 8px 20px rgba(0, 240, 255, 0.6);
     }
     
-    .analysis-btn:hover::before {
+    .upload-btn:hover::before {
       opacity: 1;
     }
     
-    .specs-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 25px;
-      margin-top: 30px;
-    }
-    
-    .spec-card {
-      background: var(--card-bg);
-      border-radius: 15px;
-      padding: 25px;
-      text-align: center;
-      border: 1px solid rgba(0, 240, 255, 0.2);
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .spec-icon {
-      font-size: 2.5rem;
-      color: var(--primary);
-      margin-bottom: 20px;
-    }
-    
-    .spec-value {
-      font-size: 2.5rem;
-      font-weight: bold;
-      color: var(--primary);
-      margin-bottom: 10px;
-      text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
-    }
-    
-    .spec-label {
-      font-size: 1.2rem;
-      color: var(--text-light);
-    }
-    
+    /* Footer Styles */
     footer {
       text-align: center;
       margin-top: 50px;
       padding: 30px;
       border-top: 1px solid rgba(0, 240, 255, 0.2);
-      color: var(--text-light);
+      color: #bbbbbb;
       font-size: 1.1rem;
-      background: var(--card-bg);
+      background: rgba(15, 30, 45, 0.7);
       border-radius: 20px;
       position: relative;
       overflow: hidden;
@@ -626,7 +384,7 @@
     
     .footer-logo {
       font-size: 2.5rem;
-      color: var(--primary);
+      color: #00f0ff;
       margin-bottom: 15px;
       position: relative;
       z-index: 1;
@@ -634,10 +392,20 @@
     
     .footer-developer {
       font-size: 1.3rem;
-      color: var(--primary);
+      color: #00f0ff;
       margin: 15px 0;
       position: relative;
       z-index: 1;
+    }
+    
+    .footer-info {
+      position: relative;
+      z-index: 1;
+      margin-top: 20px;
+    }
+    
+    .footer-info p {
+      margin: 5px 0;
     }
     
     .social-icons {
@@ -657,19 +425,20 @@
       height: 50px;
       border-radius: 50%;
       background: rgba(0, 240, 255, 0.15);
-      color: var(--primary);
+      color: #00f0ff;
       font-size: 1.5rem;
       transition: all 0.3s;
       box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
     }
     
     .social-icons a:hover {
-      background: var(--primary);
+      background: #00f0ff;
       color: #000;
       transform: translateY(-5px);
       box-shadow: 0 8px 20px rgba(0, 240, 255, 0.5);
     }
     
+    /* Animations */
     @keyframes pulse {
       0% { 
         transform: scale(1);
@@ -685,6 +454,12 @@
       }
     }
     
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0px); }
+    }
+    
     /* Responsive design */
     @media (max-width: 768px) {
       .developer, .version {
@@ -697,8 +472,8 @@
         font-size: 1.6rem;
       }
       
-      .feature-title, .analysis-title {
-        font-size: 1.5rem;
+      .feature-title {
+        font-size: 1.4rem;
       }
       
       h1 {
@@ -727,7 +502,7 @@
         font-size: 1.1rem;
       }
       
-      .feature-card, .card, .analysis-card {
+      .feature-card {
         padding: 20px 15px;
       }
     }
@@ -752,7 +527,7 @@
       </div>
       
       <div class="developer">م: رأفت عمر</div>
-      <div class="version">الإصدار 3.0 | جميع الحقوق محفوظة © 2025</div>
+      <div class="version">الإصدار 3.0</div>
     </header>
     
     <div class="features-grid">
@@ -762,7 +537,7 @@
         </div>
         <h3 class="feature-title">سرعة فائقة</h3>
         <p class="feature-desc">
-          تحليل فوري للمستندات مع نتائج دقيقة في أقل من 3 ثوانٍ
+          نتائج في أقل من 3 ثوانٍ
         </p>
       </div>
       
@@ -772,7 +547,7 @@
         </div>
         <h3 class="feature-title">ذكاء اصطناعي</h3>
         <p class="feature-desc">
-          خوارزميات متطورة للكشف عن أدق علامات التزوير في المستندات
+          خوارزميات متطورة للكشف عن التزوير
         </p>
       </div>
       
@@ -782,7 +557,7 @@
         </div>
         <h3 class="feature-title">دقة عالية</h3>
         <p class="feature-desc">
-          معدل دقة يصل إلى 99.8% في كشف التزوير والمستندات المزورة
+          معدل دقة 99.8%
         </p>
       </div>
       
@@ -792,7 +567,7 @@
         </div>
         <h3 class="feature-title">تحليل لحظي</h3>
         <p class="feature-desc">
-          تحليل فوري أثناء التصوير للكشف المباشر عن التزوير
+          أثناء التصوير للكشف المباشر
         </p>
       </div>
     </div>
@@ -803,164 +578,41 @@
         <h2>رفع المستند للتحليل الفوري</h2>
       </div>
       
-      <div class="cards-container">
-        <div class="card">
-          <div class="card-title">
-            <i class="fas fa-upload"></i>
-            <h3>رفع مستند للتحليل</h3>
+      <div class="upload-container">
+        <div class="upload-area" id="fileUploadArea">
+          <i class="fas fa-cloud-upload-alt"></i>
+          <h3 class="upload-title">رفع المستند للتحليل الفوري</h3>
+          <div class="upload-desc">
+            <p>اسحب وأسقط الملف هنا</p>
+            <p>أو انقر للاختيار من جهازك</p>
           </div>
-          <div class="card-content">
-            <p>قم برفع صورة المستند وسيتم التحليل تلقائياً في الوقت الفعلي</p>
-            <div class="file-drop-area">
-              <i class="fas fa-cloud-upload-alt"></i>
-              <p>اسحب وأسقط الملف هنا</p>
-              <p>أو انقر للاختيار من جهازك</p>
-            </div>
-            <button class="card-btn">
-              <i class="fas fa-file-upload"></i> اختيار ملف
-            </button>
-          </div>
+          <button class="upload-btn">
+            <i class="fas fa-file-upload"></i> اختيار ملف
+          </button>
         </div>
         
-        <div class="card">
-          <div class="card-title">
-            <i class="fas fa-camera"></i>
-            <h3>التصوير المباشر</h3>
+        <div class="upload-area" id="cameraUploadArea">
+          <i class="fas fa-camera"></i>
+          <h3 class="upload-title">التصوير المباشر</h3>
+          <div class="upload-desc">
+            <p>استخدم الكاميرا لالتقاط صورة المستند</p>
+            <p>وتحليلها فورياً</p>
           </div>
-          <div class="card-content">
-            <p>استخدم الكاميرا لالتقاط صورة المستند وتحليلها فورياً</p>
-            <div class="file-drop-area">
-              <i class="fas fa-camera"></i>
-              <p>انقر لتفعيل الكاميرا</p>
-              <p>والتقاط صورة المستند</p>
-            </div>
-            <button class="card-btn">
-              <i class="fas fa-camera"></i> استخدام الكاميرا
-            </button>
-          </div>
-        </div>
-        
-        <div class="card">
-          <div class="card-title">
-            <i class="fas fa-chart-pie"></i>
-            <h3>نتائج التحليل</h3>
-          </div>
-          <div class="card-content">
-            <p>تقدم عملية التحليل:</p>
-            <div class="progress-container">
-              <div class="progress-bar" id="matchProgress" style="width: 0%"></div>
-            </div>
-            <div class="result-message" id="resultMessage">
-              اختر المستند لبدء التحليل
-            </div>
-          </div>
+          <button class="upload-btn">
+            <i class="fas fa-camera"></i> استخدام الكاميرا
+          </button>
         </div>
       </div>
     </div>
     
-    <div class="specs-grid">
-      <div class="spec-card">
-        <div class="spec-icon">
-          <i class="fas fa-bolt"></i>
-        </div>
-        <div class="spec-value">3 ثواني</div>
-        <div class="spec-label">سرعة التحليل</div>
-      </div>
-      
-      <div class="spec-card">
-        <div class="spec-icon">
-          <i class="fas fa-percentage"></i>
-        </div>
-        <div class="spec-value">99.8%</div>
-        <div class="spec-label">معدل الدقة</div>
-      </div>
-      
-      <div class="spec-card">
-        <div class="spec-icon">
-          <i class="fas fa-file-contract"></i>
-        </div>
-        <div class="spec-value">50+</div>
-        <div class="spec-label">نوع مستند مدعوم</div>
-      </div>
-      
-      <div class="spec-card">
-        <div class="spec-icon">
-          <i class="fas fa-microchip"></i>
-        </div>
-        <div class="spec-value">32 خوارزمية</div>
-        <div class="spec-label">للكشف عن التزوير</div>
-      </div>
-    </div>
-    
-    <div class="main-section advanced-analysis-section">
-      <div class="section-title">
-        <i class="fas fa-microscope"></i>
-        <h2>التحليلات المتقدمة</h2>
-      </div>
-      <p style="text-align: center; color: var(--primary); margin-bottom: 20px; font-size: 1.1rem; position: relative; z-index: 1;">
-        وحدات تحليل متخصصة لتقنيات كشف التزوير باستخدام أساليب متطورة
-      </p>
-      
-      <div class="analysis-cards">
-        <div class="analysis-card">
-          <div class="analysis-icon">
-            <i class="fas fa-fingerprint"></i>
-          </div>
-          <h3 class="analysis-title">التحليل المباشر</h3>
-          <p>كشف التزوير من خلال تحليل البصمات والعلامات المميزة</p>
-          <a href="#" class="analysis-btn">
-            <i class="fas fa-play"></i> تشغيل التحليل
-          </a>
-        </div>
-        
-        <div class="analysis-card">
-          <div class="analysis-icon">
-            <i class="fas fa-layer-group"></i>
-          </div>
-          <h3 class="analysis-title">التحليل الطبقي</h3>
-          <p>الكشف عن طبقات التعديل في المستندات الرقمية</p>
-          <a href="#" class="analysis-btn">
-            <i class="fas fa-play"></i> تشغيل التحليل
-          </a>
-        </div>
-        
-        <div class="analysis-card">
-          <div class="analysis-icon">
-            <i class="fas fa-text-height"></i>
-          </div>
-          <h3 class="analysis-title">تحليل النصوص</h3>
-          <p>كشف التلاعب في النصوص والمستندات المكتوبة</p>
-          <a href="#" class="analysis-btn">
-            <i class="fas fa-play"></i> تشغيل التحليل
-          </a>
-        </div>
-        
-        <div class="analysis-card">
-          <div class="analysis-icon">
-            <i class="fas fa-water"></i>
-          </div>
-          <h3 class="analysis-title">علامات مائية</h3>
-          <p>الكشف عن العلامات المائية المخفية في المستندات</p>
-          <a href="#" class="analysis-btn">
-            <i class="fas fa-play"></i> تشغيل التحليل
-          </a>
-        </div>
-      </div>
-    </div>
-   
     <footer>
       <div class="footer-logo">
         <i class="fas fa-shield-alt"></i>
       </div>
       <div class="footer-developer">م: رأفت عمر</div>
-      <p>نظام RQEEB المتقدم للتحليل الفوري للتزوير</p>
-      <p>الإصدار 3.0 | جميع الحقوق محفوظة © 2025</p>
-      
-      <div class="social-icons">
-        <a href="#"><i class="fab fa-twitter"></i></a>
-        <a href="#"><i class="fab fa-facebook"></i></a>
-        <a href="#"><i class="fab fa-linkedin"></i></a>
-        <a href="#"><i class="fab fa-youtube"></i></a>
+      <div class="footer-info">
+        <p>نظام RQEEB للتحليل الفوري</p>
+        <p>الإصدار 3.0 | جميع الحقوق محفوظة © 2025</p>
       </div>
     </footer>
   </div>
@@ -968,63 +620,89 @@
   <script>
     // محاكاة عملية تحليل المستند
     function simulateAnalysis() {
-      const progressBar = document.getElementById('matchProgress');
-      const result = document.getElementById('resultMessage');
+      // إظهار رسالة بدء التحليل
+      const fileUploadArea = document.getElementById('fileUploadArea');
+      fileUploadArea.innerHTML = `
+        <div style="text-align: center; padding: 20px;">
+          <i class="fas fa-spinner fa-spin" style="font-size: 3rem; color: #00f0ff; margin-bottom: 20px;"></i>
+          <h3 class="upload-title">جارٍ تحليل المستند</h3>
+          <div class="upload-desc">
+            <p>يتم الآن تحليل المستند للكشف عن التزوير</p>
+            <p>الرجاء الانتظار...</p>
+          </div>
+        </div>
+      `;
       
-      result.innerHTML = "⏳ جاري تحليل المستند...";
-      result.style.color = '#00f0ff';
-      result.style.borderColor = '#00f0ff';
-      result.style.boxShadow = '0 0 15px rgba(0, 240, 255, 0.3)';
-      
-      let progress = 0;
-      const interval = setInterval(() => {
-        progress += 2;
-        progressBar.style.width = `${progress}%`;
-        
-        if (progress >= 100) {
-          clearInterval(interval);
-          showAnalysisResult();
-        }
-      }, 50);
+      // محاكاة اكتمال التحليل بعد 3 ثوانٍ
+      setTimeout(() => {
+        fileUploadArea.innerHTML = `
+          <div style="text-align: center; padding: 20px;">
+            <i class="fas fa-check-circle" style="font-size: 3rem; color: #00ff00; margin-bottom: 20px;"></i>
+            <h3 class="upload-title">تحليل مكتمل</h3>
+            <div class="upload-desc">
+              <p>تم الكشف عن المستند بنجاح</p>
+              <p>المستند أصلي بنسبة 99.8%</p>
+            </div>
+            <button class="upload-btn" onclick="resetUploadArea()">
+              <i class="fas fa-redo"></i> تحليل جديد
+            </button>
+          </div>
+        `;
+      }, 3000);
     }
     
-    // عرض نتيجة التحليل
-    function showAnalysisResult() {
-      const result = document.getElementById('resultMessage');
-      const progressBar = document.getElementById('matchProgress');
-      
-      // نتائج عشوائية لمحاكاة التحليل
-      const isAuthentic = Math.random() > 0.3;
-      
-      if (isAuthentic) {
-        result.innerHTML = `✅ <strong>المستند أصلي</strong> - دقة التحليل: 99.8%`;
-        result.style.color = '#00cc66';
-        result.style.borderColor = '#00cc66';
-        result.style.boxShadow = '0 0 15px rgba(0, 204, 102, 0.3)';
-      } else {
-        result.innerHTML = `❌ <strong>تم الكشف عن تزوير</strong> - دقة التحليل: 98.5%`;
-        result.style.color = '#ff3333';
-        result.style.borderColor = '#ff3333';
-        result.style.boxShadow = '0 0 15px rgba(255, 51, 51, 0.3)';
-      }
+    // إعادة تعيين منطقة الرفع
+    function resetUploadArea() {
+      const fileUploadArea = document.getElementById('fileUploadArea');
+      fileUploadArea.innerHTML = `
+        <i class="fas fa-cloud-upload-alt"></i>
+        <h3 class="upload-title">رفع المستند للتحليل الفوري</h3>
+        <div class="upload-desc">
+          <p>اسحب وأسقط الملف هنا</p>
+          <p>أو انقر للاختيار من جهازك</p>
+        </div>
+        <button class="upload-btn" onclick="simulateAnalysis()">
+          <i class="fas fa-file-upload"></i> اختيار ملف
+        </button>
+      `;
     }
     
-    // إضافة مستند للتحليل
-    document.querySelectorAll('.file-drop-area, .card-btn').forEach(element => {
-      element.addEventListener('click', () => {
-        setTimeout(simulateAnalysis, 1000);
-      });
+    // إعداد تفاعل منطقة الرفع
+    document.getElementById('fileUploadArea').addEventListener('click', simulateAnalysis);
+    document.getElementById('cameraUploadArea').addEventListener('click', function() {
+      this.innerHTML = `
+        <div style="text-align: center; padding: 20px;">
+          <i class="fas fa-camera" style="font-size: 3rem; color: #00f0ff; margin-bottom: 20px;"></i>
+          <h3 class="upload-title">الكاميرا نشطة</h3>
+          <div class="upload-desc">
+            <p>يتم الآن تحضير الكاميرا</p>
+            <p>الرجاء السماح بالوصول إلى الكاميرا</p>
+          </div>
+          <div style="width: 100%; height: 150px; background: rgba(0,0,0,0.3); border-radius: 10px; margin: 20px 0; display: flex; align-items: center; justify-content: center;">
+            <i class="fas fa-video" style="font-size: 2rem; color: #00f0ff;"></i>
+          </div>
+          <button class="upload-btn" onclick="resetCameraArea()">
+            <i class="fas fa-times"></i> إلغاء
+          </button>
+        </div>
+      `;
     });
     
-    // تحريك شريط التقدم عند التحميل
-    setTimeout(() => {
-      document.querySelectorAll('.spec-value').forEach((element, index) => {
-        setTimeout(() => {
-          element.style.opacity = 1;
-          element.style.transform = 'translateY(0)';
-        }, 300 * index);
-      });
-    }, 500);
+    // إعادة تعيين منطقة الكاميرا
+    function resetCameraArea() {
+      const cameraUploadArea = document.getElementById('cameraUploadArea');
+      cameraUploadArea.innerHTML = `
+        <i class="fas fa-camera"></i>
+        <h3 class="upload-title">التصوير المباشر</h3>
+        <div class="upload-desc">
+          <p>استخدم الكاميرا لالتقاط صورة المستند</p>
+          <p>وتحليلها فورياً</p>
+        </div>
+        <button class="upload-btn">
+          <i class="fas fa-camera"></i> استخدام الكاميرا
+        </button>
+      `;
+    }
   </script>
 </body>
 </html>
