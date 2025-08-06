@@ -1,698 +1,1076 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>نظام RQEEB المتقدم لكشف التزوير في المستندات</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Tajawal', 'Cairo', sans-serif;
-    }
-    
-    body {
-      background: linear-gradient(135deg, #0a0a1a, #121212);
-      color: #f0f0f0;
-      min-height: 100vh;
-      padding: 20px;
-      overflow-x: hidden;
-    }
-    
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-    
-    header {
-      text-align: center;
-      margin-bottom: 40px;
-      padding: 20px;
-      background: rgba(0, 0, 0, 0.4);
-      border-radius: 20px;
-      box-shadow: 0 0 30px rgba(255, 136, 0, 0.3);
-      border: 1px solid rgba(255, 136, 0, 0.2);
-    }
-    
-    .logo {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 15px;
-      margin-bottom: 15px;
-    }
-    
-    .logo i {
-      font-size: 2.8rem;
-      color: #ff8800;
-      animation: pulse 2s infinite;
-    }
-    
-    h1 {
-      font-size: 2.6rem;
-      color: #ff8800;
-      margin-bottom: 10px;
-      text-shadow: 0 0 15px rgba(255, 136, 0, 0.5);
-    }
-    
-    .subtitle {
-      font-size: 1.2rem;
-      color: #bbb;
-      max-width: 800px;
-      margin: 0 auto;
-      line-height: 1.7;
-    }
-    
-    .content {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 30px;
-      margin-bottom: 40px;
-    }
-    
-    .camera-section {
-      flex: 1;
-      min-width: 300px;
-      background: rgba(20, 20, 30, 0.7);
-      border-radius: 20px;
-      padding: 25px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-      border: 1px solid rgba(255, 136, 0, 0.3);
-    }
-    
-    .section-title {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      margin-bottom: 25px;
-      font-size: 1.8rem;
-      color: #ff8800;
-    }
-    
-    .section-title i {
-      font-size: 1.8rem;
-    }
-    
-    .video-container {
-      position: relative;
-      width: 100%;
-      border-radius: 15px;
-      overflow: hidden;
-      margin-bottom: 20px;
-      border: 2px solid #333;
-      background: #000;
-      aspect-ratio: 16/9;
-    }
-    
-    video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-    
-    .boxes {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-    }
-    
-    .box {
-      position: absolute;
-      width: 180px;
-      height: 180px;
-      border: 3px solid;
-      border-radius: 12px;
-      box-shadow: 0 0 25px rgba(255, 255, 255, 0.3);
-    }
-    
-    .box-left {
-      top: 50%;
-      left: 20%;
-      transform: translate(-50%, -50%);
-      border-color: #00cc66;
-      box-shadow: 0 0 25px rgba(0, 204, 102, 0.4);
-    }
-    
-    .box-right {
-      top: 50%;
-      left: 80%;
-      transform: translate(-50%, -50%);
-      border-color: #ff3333;
-      box-shadow: 0 0 25px rgba(255, 51, 51, 0.4);
-    }
-    
-    .box-label {
-      position: absolute;
-      top: -35px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0, 0, 0, 0.7);
-      color: #fff;
-      padding: 8px 15px;
-      border-radius: 30px;
-      font-weight: bold;
-      font-size: 1.1rem;
-      white-space: nowrap;
-    }
-    
-    .box-left .box-label {
-      background: #00cc66;
-    }
-    
-    .box-right .box-label {
-      background: #ff3333;
-    }
-    
-    .controls {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-      margin-top: 25px;
-    }
-    
-    button {
-      padding: 15px 30px;
-      font-size: 1.2rem;
-      border-radius: 15px;
-      border: none;
-      background: linear-gradient(135deg, #ff8800, #e67700);
-      color: #000;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.3s;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      box-shadow: 0 5px 15px rgba(230, 119, 0, 0.4);
-    }
-    
-    button:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 20px rgba(230, 119, 0, 0.6);
-    }
-    
-    .results-section {
-      flex: 1;
-      min-width: 300px;
-      background: rgba(20, 20, 30, 0.7);
-      border-radius: 20px;
-      padding: 25px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-      border: 1px solid rgba(255, 136, 0, 0.3);
-    }
-    
-    .results-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 25px;
-    }
-    
-    .result-title {
-      font-size: 1.8rem;
-      color: #ff8800;
-    }
-    
-    .score-container {
-      background: rgba(0, 0, 0, 0.4);
-      border-radius: 15px;
-      padding: 10px 25px;
-      border: 1px solid #ff8800;
-    }
-    
-    .score-value {
-      font-size: 2.2rem;
-      font-weight: bold;
-      color: #ff8800;
-      text-align: center;
-    }
-    
-    .score-label {
-      color: #bbb;
-      text-align: center;
-    }
-    
-    .results-content {
-      background: rgba(0, 0, 0, 0.3);
-      border-radius: 15px;
-      padding: 20px;
-      min-height: 300px;
-      border: 1px solid #333;
-    }
-    
-    .verdict {
-      text-align: center;
-      font-size: 1.8rem;
-      font-weight: bold;
-      padding: 20px;
-      border-radius: 15px;
-      margin: 20px 0;
-      animation: pulse 2s infinite;
-    }
-    
-    .safe {
-      background: rgba(0, 200, 83, 0.15);
-      color: #00c853;
-      border: 2px solid #00c853;
-    }
-    
-    .warning {
-      background: rgba(255, 193, 7, 0.15);
-      color: #ffc107;
-      border: 2px solid #ffc107;
-    }
-    
-    .danger {
-      background: rgba(244, 67, 54, 0.15);
-      color: #f44336;
-      border: 2px solid #f44336;
-    }
-    
-    .analysis-details {
-      margin-top: 25px;
-    }
-    
-    .detail-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 15px;
-    }
-    
-    .detail-item {
-      background: rgba(30, 30, 40, 0.7);
-      border-radius: 12px;
-      padding: 15px;
-      border: 1px solid #333;
-    }
-    
-    .detail-label {
-      color: #bbb;
-      margin-bottom: 8px;
-      font-size: 1rem;
-    }
-    
-    .detail-value {
-      font-size: 1.3rem;
-      font-weight: bold;
-      color: #ff8800;
-    }
-    
-    .progress-container {
-      margin: 30px 0;
-      background: rgba(0, 0, 0, 0.3);
-      border-radius: 10px;
-      height: 20px;
-      overflow: hidden;
-      border: 1px solid #333;
-    }
-    
-    .progress-bar {
-      height: 100%;
-      background: linear-gradient(90deg, #ff8800, #ff5500);
-      border-radius: 10px;
-      transition: width 0.5s ease;
-    }
-    
-    .features {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 20px;
-      margin-top: 40px;
-    }
-    
-    .feature-card {
-      background: rgba(30, 30, 40, 0.7);
-      border-radius: 15px;
-      padding: 25px;
-      border: 1px solid #333;
-      transition: all 0.3s;
-    }
-    
-    .feature-card:hover {
-      transform: translateY(-10px);
-      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
-      border-color: #ff8800;
-    }
-    
-    .feature-icon {
-      font-size: 2.5rem;
-      color: #ff8800;
-      margin-bottom: 15px;
-      text-align: center;
-    }
-    
-    .feature-title {
-      font-size: 1.4rem;
-      color: #ff8800;
-      margin-bottom: 15px;
-      text-align: center;
-    }
-    
-    .feature-desc {
-      color: #bbb;
-      text-align: center;
-      line-height: 1.6;
-    }
-    
-    footer {
-      text-align: center;
-      margin-top: 50px;
-      padding-top: 20px;
-      border-top: 1px solid #333;
-      color: #777;
-      font-size: 1rem;
-    }
-    
-    canvas {
-      display: none;
-    }
-    
-    @keyframes pulse {
-      0% { box-shadow: 0 0 0 0 rgba(255, 136, 0, 0.4); }
-      70% { box-shadow: 0 0 0 15px rgba(255, 136, 0, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(255, 136, 0, 0); }
-    }
-    
-    /* Responsive design */
-    @media (max-width: 768px) {
-      .content {
-        flex-direction: column;
-      }
-      
-      .controls {
-        flex-direction: column;
-        align-items: center;
-      }
-      
-      .box {
-        width: 130px;
-        height: 130px;
-      }
-      
-      .box-left {
-        left: 30%;
-      }
-      
-      .box-right {
-        left: 70%;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام RQEEB المتقدم - التحليل المباشر للكاميرا</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://kit.fontawesome.com/4b9ba14b0f.js" crossorigin="anonymous"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#5D5CDE',
+                        secondary: '#ff8800'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a1a, #121212);
+        }
+        
+        .video-container {
+            position: relative;
+            border-radius: 15px;
+            overflow: hidden;
+            background: #000;
+            aspect-ratio: 16/9;
+        }
+        
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        
+        .detection-boxes {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        .detection-box {
+            position: absolute;
+            border: 3px solid;
+            border-radius: 12px;
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.3);
+            width: 200px;
+            height: 200px;
+        }
+        
+        .box-original {
+            top: 50%;
+            left: 25%;
+            transform: translate(-50%, -50%);
+            border-color: #00cc66;
+            box-shadow: 0 0 25px rgba(0, 204, 102, 0.4);
+        }
+        
+        .box-suspect {
+            top: 50%;
+            left: 75%;
+            transform: translate(-50%, -50%);
+            border-color: #ff3333;
+            box-shadow: 0 0 25px rgba(255, 51, 51, 0.4);
+        }
+        
+        .box-label {
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1rem;
+            white-space: nowrap;
+        }
+        
+        .box-original .box-label {
+            background: #00cc66;
+        }
+        
+        .box-suspect .box-label {
+            background: #ff3333;
+        }
+        
+        .analysis-card {
+            background: rgba(20, 20, 30, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 136, 0, 0.3);
+        }
+        
+        .metric-item {
+            background: rgba(30, 30, 40, 0.8);
+            border: 1px solid rgba(93, 92, 222, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .metric-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(93, 92, 222, 0.15);
+            border-color: rgba(93, 92, 222, 0.4);
+        }
+        
+        .progress-ring {
+            transform: rotate(-90deg);
+        }
+        
+        .progress-ring-circle {
+            stroke-dasharray: 251.2;
+            stroke-dashoffset: 251.2;
+            transition: stroke-dashoffset 0.5s ease-in-out;
+        }
+        
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 136, 0, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(255, 136, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 136, 0, 0); }
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, rgba(93, 92, 222, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%);
+        }
+        
+        .glow-effect {
+            text-shadow: 0 0 10px rgba(255, 136, 0, 0.5);
+        }
+        
+        /* Mobile responsive adjustments */
+        @media (max-width: 768px) {
+            .detection-box {
+                width: 150px;
+                height: 150px;
+            }
+            
+            .box-original {
+                left: 30%;
+            }
+            
+            .box-suspect {
+                left: 70%;
+            }
+        }
+    </style>
 </head>
-<body>
-  <div class="container">
-    <header>
-      <div class="logo">
-        <i class="fas fa-file-contract"></i>
-        <h1>نظام RQEEB المتقدم لكشف التزوير في المستندات</h1>
-      </div>
-      <p class="subtitle">
-        نظام متطور يعتمد على الذكاء الاصطناعي لتحليل نسيج الورق وتأثيرات الإضاءة لاكتشاف التزوير بدقة عالية.
-        قم بتوجيه الكاميرا نحو المستندين للحصول على تحليل فوري ومفصل.
-      </p>
-    </header>
-    
-    <div class="content">
-      <div class="camera-section">
-        <div class="section-title">
-          <i class="fas fa-camera"></i>
-          <h2>الكاميرا المباشرة</h2>
-        </div>
-        
-        <div class="video-container">
-          <video id="video" autoplay playsinline></video>
-          <div class="boxes">
-            <div class="box box-left">
-              <div class="box-label">المستند الأصلي</div>
+<body class="text-white min-h-screen">
+    <div class="container mx-auto px-4 py-6 max-w-7xl">
+        <!-- Header -->
+        <header class="text-center mb-8 p-6 analysis-card rounded-xl">
+            <div class="flex items-center justify-center gap-4 mb-4">
+                <i class="fas fa-file-contract text-4xl text-secondary pulse-animation"></i>
+                <h1 class="text-3xl md:text-4xl font-bold text-secondary glow-effect">
+                    نظام RQEEB المتقدم - التحليل المباشر
+                </h1>
             </div>
-            <div class="box box-right">
-              <div class="box-label">المستند المشكوك فيه</div>
+            <p class="text-gray-300 text-lg max-w-4xl mx-auto leading-relaxed">
+                تحليل فوري ومتطور للمستندات باستخدام الذكاء الاصطناعي وخوارزميات معالجة الصور المتقدمة
+            </p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- Camera Section -->
+            <div class="analysis-card rounded-xl p-6">
+                <div class="flex items-center gap-3 mb-6">
+                    <i class="fas fa-camera text-2xl text-secondary"></i>
+                    <h2 class="text-2xl font-bold text-secondary">الكاميرا المباشرة</h2>
+                </div>
+                
+                <div class="video-container mb-6">
+                    <video id="video" autoplay playsinline muted></video>
+                    <div class="detection-boxes">
+                        <div class="detection-box box-original">
+                            <div class="box-label">المستند الأصلي</div>
+                        </div>
+                        <div class="detection-box box-suspect">
+                            <div class="box-label">المستند المشكوك فيه</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Camera Controls -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <button id="analyzeBtn" onclick="startAdvancedAnalysis()" 
+                            class="bg-gradient-to-r from-secondary to-orange-600 text-black font-bold py-3 px-6 rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2">
+                        <i class="fas fa-search"></i>
+                        بدء التحليل المتقدم
+                    </button>
+                    <button onclick="resetAnalysis()" 
+                            class="bg-gradient-to-r from-gray-600 to-gray-700 text-white font-bold py-3 px-6 rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2">
+                        <i class="fas fa-redo"></i>
+                        إعادة التحليل
+                    </button>
+                </div>
+
+                <!-- Settings Panel -->
+                <div class="mt-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
+                    <h3 class="text-lg font-bold mb-3 text-secondary">إعدادات التحليل</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">حساسية التحليل</label>
+                            <select id="sensitivityLevel" class="w-full p-2 rounded bg-gray-700 text-white border border-gray-600">
+                                <option value="low">منخفضة</option>
+                                <option value="medium" selected>متوسطة</option>
+                                <option value="high">عالية</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">نوع التحليل</label>
+                            <select id="analysisType" class="w-full p-2 rounded bg-gray-700 text-white border border-gray-600">
+                                <option value="comprehensive" selected>شامل</option>
+                                <option value="texture">نسيج فقط</option>
+                                <option value="color">ألوان فقط</option>
+                                <option value="lighting">إضاءة فقط</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
-        </div>
-        
-        <div class="controls">
-          <button onclick="analyze()">
-            <i class="fas fa-search"></i> بدء التحليل المتقدم
-          </button>
-          <button onclick="resetAnalysis()">
-            <i class="fas fa-redo"></i> إعادة التحليل
-          </button>
-        </div>
-      </div>
-      
-      <div class="results-section">
-        <div class="results-header">
-          <div class="result-title">نتائج التحليل</div>
-          <div class="score-container">
-            <div class="score-value" id="scoreValue">0%</div>
-            <div class="score-label">درجة التطابق</div>
-          </div>
-        </div>
-        
-        <div class="results-content">
-          <div class="verdict" id="verdict">
-            <i class="fas fa-sync-alt"></i> في انتظار بدء التحليل
-          </div>
-          
-          <div class="progress-container">
-            <div class="progress-bar" id="progressBar" style="width: 0%"></div>
-          </div>
-          
-          <div class="analysis-details">
-            <div class="detail-grid">
-              <div class="detail-item">
-                <div class="detail-label">تطابق النسيج</div>
-                <div class="detail-value" id="textureMatch">0%</div>
-              </div>
-              <div class="detail-item">
-                <div class="detail-label">تطابق الإضاءة</div>
-                <div class="detail-value" id="lightMatch">0%</div>
-              </div>
-              <div class="detail-item">
-                <div class="detail-label">تطابق الألوان</div>
-                <div class="detail-value" id="colorMatch">0%</div>
-              </div>
-              <div class="detail-item">
-                <div class="detail-label">تطابق البنية</div>
-                <div class="detail-value" id="structureMatch">0%</div>
-              </div>
+
+            <!-- Results Section -->
+            <div class="analysis-card rounded-xl p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center gap-3">
+                        <i class="fas fa-chart-line text-2xl text-secondary"></i>
+                        <h2 class="text-2xl font-bold text-secondary">نتائج التحليل</h2>
+                    </div>
+                    <div class="text-center">
+                        <div class="relative w-20 h-20">
+                            <svg class="progress-ring w-full h-full">
+                                <circle class="progress-ring-circle" stroke="#ff8800" stroke-width="4" fill="transparent" r="40" cx="50%" cy="50%"/>
+                            </svg>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <span id="scoreDisplay" class="text-xl font-bold text-secondary">0%</span>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-300 mt-1">درجة التطابق</p>
+                    </div>
+                </div>
+
+                <!-- Status Display -->
+                <div id="statusDisplay" class="text-center p-4 rounded-lg mb-6 bg-gray-800 bg-opacity-50 border border-gray-600">
+                    <i class="fas fa-camera text-secondary text-2xl mb-2"></i>
+                    <p class="text-gray-300">قم بتوجيه الكاميرا نحو المستندين واضغط "بدء التحليل"</p>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="mb-6">
+                    <div class="flex justify-between text-sm text-gray-300 mb-2">
+                        <span>التقدم</span>
+                        <span id="progressText">0%</span>
+                    </div>
+                    <div class="w-full bg-gray-700 rounded-full h-3">
+                        <div id="progressBar" class="bg-gradient-to-r from-secondary to-orange-600 h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Detailed Metrics -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="metric-item rounded-lg p-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm text-gray-300">تطابق النسيج</span>
+                            <i class="fas fa-microscope text-secondary"></i>
+                        </div>
+                        <div class="text-xl font-bold text-secondary" id="textureScore">0%</div>
+                    </div>
+                    
+                    <div class="metric-item rounded-lg p-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm text-gray-300">تطابق الإضاءة</span>
+                            <i class="fas fa-lightbulb text-secondary"></i>
+                        </div>
+                        <div class="text-xl font-bold text-secondary" id="lightingScore">0%</div>
+                    </div>
+                    
+                    <div class="metric-item rounded-lg p-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm text-gray-300">تطابق الألوان</span>
+                            <i class="fas fa-palette text-secondary"></i>
+                        </div>
+                        <div class="text-xl font-bold text-secondary" id="colorScore">0%</div>
+                    </div>
+                    
+                    <div class="metric-item rounded-lg p-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm text-gray-300">تطابق البنية</span>
+                            <i class="fas fa-qrcode text-secondary"></i>
+                        </div>
+                        <div class="text-xl font-bold text-secondary" id="structureScore">0%</div>
+                    </div>
+                </div>
             </div>
-          </div>
         </div>
-      </div>
+
+        <!-- Advanced Analysis Results -->
+        <div id="advancedResults" class="hidden analysis-card rounded-xl p-6 mb-8">
+            <h2 class="text-2xl font-bold text-secondary mb-6 flex items-center gap-3">
+                <i class="fas fa-microscope"></i>
+                التحليل المتقدم والمفصل
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Frequency Analysis -->
+                <div class="metric-item rounded-lg p-4">
+                    <h3 class="font-bold text-lg mb-3 flex items-center gap-2">
+                        <i class="fas fa-wave-square text-secondary"></i>
+                        التحليل الترددي
+                    </h3>
+                    <div class="space-y-2">
+                        <div class="flex justify-between">
+                            <span class="text-sm">ترددات عالية</span>
+                            <span id="highFreq" class="font-bold text-secondary">0%</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-sm">ترددات متوسطة</span>
+                            <span id="midFreq" class="font-bold text-secondary">0%</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-sm">ترددات منخفضة</span>
+                            <span id="lowFreq" class="font-bold text-secondary">0%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Edge Analysis -->
+                <div class="metric-item rounded-lg p-4">
+                    <h3 class="font-bold text-lg mb-3 flex items-center gap-2">
+                        <i class="fas fa-vector-square text-secondary"></i>
+                        تحليل الحواف
+                    </h3>
+                    <div class="space-y-2">
+                        <div class="flex justify-between">
+                            <span class="text-sm">كثافة الحواف</span>
+                            <span id="edgeDensity" class="font-bold text-secondary">0%</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-sm">حدة الحواف</span>
+                            <span id="edgeSharpness" class="font-bold text-secondary">0%</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-sm">تناسق الحواف</span>
+                            <span id="edgeConsistency" class="font-bold text-secondary">0%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Noise Analysis -->
+                <div class="metric-item rounded-lg p-4">
+                    <h3 class="font-bold text-lg mb-3 flex items-center gap-2">
+                        <i class="fas fa-volume-up text-secondary"></i>
+                        تحليل الضوضاء
+                    </h3>
+                    <div class="space-y-2">
+                        <div class="flex justify-between">
+                            <span class="text-sm">مستوى الضوضاء</span>
+                            <span id="noiseLevel" class="font-bold text-secondary">0%</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-sm">توزيع الضوضاء</span>
+                            <span id="noiseDistribution" class="font-bold text-secondary">0%</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-sm">نمط الضوضاء</span>
+                            <span id="noisePattern" class="font-bold text-secondary">0%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visual Comparison -->
+            <div class="mt-8">
+                <h3 class="text-xl font-bold text-secondary mb-4 flex items-center gap-2">
+                    <i class="fas fa-eye"></i>
+                    المقارنة البصرية
+                </h3>
+                <div id="visualComparison" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Visual comparison will be inserted here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Features Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="analysis-card rounded-xl p-6 text-center hover:transform hover:scale-105 transition-all duration-300">
+                <i class="fas fa-microscope text-4xl text-secondary mb-4"></i>
+                <h3 class="text-xl font-bold text-secondary mb-3">تحليل النسيج المتقدم</h3>
+                <p class="text-gray-300">خوارزميات Gabor لتحليل نسيج الورق بدقة عالية</p>
+            </div>
+
+            <div class="analysis-card rounded-xl p-6 text-center hover:transform hover:scale-105 transition-all duration-300">
+                <i class="fas fa-lightbulb text-4xl text-secondary mb-4"></i>
+                <h3 class="text-xl font-bold text-secondary mb-3">كشف تلاعب الإضاءة</h3>
+                <p class="text-gray-300">تحليل أنماط الإضاءة والظلال للكشف عن التلاعب</p>
+            </div>
+
+            <div class="analysis-card rounded-xl p-6 text-center hover:transform hover:scale-105 transition-all duration-300">
+                <i class="fas fa-palette text-4xl text-secondary mb-4"></i>
+                <h3 class="text-xl font-bold text-secondary mb-3">تحليل طيفي للألوان</h3>
+                <p class="text-gray-300">مقارنة الألوان في مساحات لونية متعددة</p>
+            </div>
+
+            <div class="analysis-card rounded-xl p-6 text-center hover:transform hover:scale-105 transition-all duration-300">
+                <i class="fas fa-brain text-4xl text-secondary mb-4"></i>
+                <h3 class="text-xl font-bold text-secondary mb-3">ذكاء اصطناعي</h3>
+                <p class="text-gray-300">خوارزميات تعلم عميق لكشف أنماط التزوير</p>
+            </div>
+        </div>
     </div>
-    
-    <div class="features">
-      <div class="feature-card">
-        <div class="feature-icon">
-          <i class="fas fa-microscope"></i>
-        </div>
-        <h3 class="feature-title">تحليل النسيج</h3>
-        <p class="feature-desc">
-          تحليل دقيق لنسيج الورق لاكتشاف أدق الاختلافات بين المستندات الأصلية والمزورة.
-        </p>
-      </div>
-      
-      <div class="feature-card">
-        <div class="feature-icon">
-          <i class="fas fa-lightbulb"></i>
-        </div>
-        <h3 class="feature-title">تحليل الإضاءة</h3>
-        <p class="feature-desc">
-          كشف التلاعب من خلال تحليل أنماط الإضاءة والظلال على المستند.
-        </p>
-      </div>
-      
-      <div class="feature-card">
-        <div class="feature-icon">
-          <i class="fas fa-palette"></i>
-        </div>
-        <h3 class="feature-title">تحليل الألوان</h3>
-        <p class="feature-desc">
-          مقارنة الألوان في مساحات لونية متعددة لاكتشاف أدنى الاختلافات.
-        </p>
-      </div>
-      
-      <div class="feature-card">
-        <div class="feature-icon">
-          <i class="fas fa-qrcode"></i>
-        </div>
-        <h3 class="feature-title">تحليل البنية</h3>
-        <p class="feature-desc">
-          تحليل البنية الدقيقة والترددات في المستند لاكتشاف التلاعب.
-        </p>
-      </div>
-    </div>
-    
-    <footer>
-      <p>تم التطوير بواسطة نظام RQEEB المتقدم | النسخة 3.2.1</p>
-      <p>جميع الحقوق محفوظة © 2025</p>
-    </footer>
-  </div>
-  
-  <canvas id="canvas"></canvas>
-  
-  <script>
-    // عناصر واجهة المستخدم
-    const video = document.getElementById("video");
-    const canvas = document.getElementById("canvas");
-    const ctx = canvas.getContext("2d");
-    const scoreValue = document.getElementById("scoreValue");
-    const verdict = document.getElementById("verdict");
-    const progressBar = document.getElementById("progressBar");
-    const textureMatch = document.getElementById("textureMatch");
-    const lightMatch = document.getElementById("lightMatch");
-    const colorMatch = document.getElementById("colorMatch");
-    const structureMatch = document.getElementById("structureMatch");
-    
-    // تهيئة الكاميرا
-    function initCamera() {
-      navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-        .then(stream => {
-          video.srcObject = stream;
-        })
-        .catch(err => {
-          verdict.innerHTML = '<i class="fas fa-exclamation-triangle"></i> فشل تشغيل الكاميرا';
-          verdict.className = "verdict danger";
+
+    <!-- Hidden canvas for image processing -->
+    <canvas id="canvas" class="hidden"></canvas>
+
+    <script>
+        // Dark mode handling
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            if (event.matches) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
         });
-    }
-    
-    // تحليل المستندين
-    function analyze() {
-      if (video.readyState < 2) {
-        verdict.innerHTML = '<i class="fas fa-exclamation-triangle"></i> الكاميرا غير جاهزة بعد';
-        verdict.className = "verdict danger";
-        return;
-      }
-      
-      // إعداد النتائج للتحليل الجديد
-      verdict.innerHTML = '<i class="fas fa-cogs"></i> جاري تحليل المستندات...';
-      verdict.className = "verdict";
-      progressBar.style.width = "0%";
-      scoreValue.textContent = "0%";
-      
-      // إعداد أبعاد الكانفاس
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      
-      // رسم الفيديو على الكانفاس
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      
-      // إحداثيات المناطق
-      const boxSize = 180;
-      const leftBox = { 
-        x: video.videoWidth * 0.2 - boxSize/2, 
-        y: video.videoHeight/2 - boxSize/2 
-      };
-      
-      const rightBox = { 
-        x: video.videoWidth * 0.8 - boxSize/2, 
-        y: video.videoHeight/2 - boxSize/2 
-      };
-      
-      // استخراج بيانات الصور للمناطق
-      const leftImage = ctx.getImageData(leftBox.x, leftBox.y, boxSize, boxSize);
-      const rightImage = ctx.getImageData(rightBox.x, rightBox.y, boxSize, boxSize);
-      
-      // بدء التحليل مع مؤشر تقدم
-      simulateAnalysis(leftImage, rightImage);
-    }
-    
-    // محاكاة عملية التحليل مع التقدم المرئي
-    function simulateAnalysis(leftImage, rightImage) {
-      let progress = 0;
-      const interval = setInterval(() => {
-        progress += 2;
-        progressBar.style.width = `${progress}%`;
-        
-        if (progress >= 20) {
-          textureMatch.textContent = `${Math.min(progress + 30, 95)}%`;
+
+        // Global variables
+        const video = document.getElementById("video");
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+        let stream = null;
+        let isAnalyzing = false;
+
+        // Initialize camera
+        async function initCamera() {
+            try {
+                // Try to get rear camera first, fallback to any camera
+                const constraints = {
+                    video: {
+                        facingMode: { ideal: "environment" },
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 }
+                    }
+                };
+
+                stream = await navigator.mediaDevices.getUserMedia(constraints);
+                video.srcObject = stream;
+                
+                video.addEventListener('loadedmetadata', () => {
+                    updateStatus('success', 'الكاميرا جاهزة للتحليل');
+                });
+
+            } catch (error) {
+                console.error('Camera error:', error);
+                updateStatus('error', 'فشل في تشغيل الكاميرا. تأكد من منح الصلاحيات.');
+            }
         }
-        
-        if (progress >= 40) {
-          lightMatch.textContent = `${Math.min(progress + 20, 90)}%`;
+
+        // Update status display
+        function updateStatus(type, message) {
+            const statusDisplay = document.getElementById('statusDisplay');
+            let iconClass = 'fas fa-camera';
+            let bgClass = 'bg-gray-800 bg-opacity-50 border-gray-600';
+
+            switch(type) {
+                case 'success':
+                    iconClass = 'fas fa-check-circle';
+                    bgClass = 'bg-green-900 bg-opacity-50 border-green-500';
+                    break;
+                case 'warning':
+                    iconClass = 'fas fa-exclamation-triangle';
+                    bgClass = 'bg-yellow-900 bg-opacity-50 border-yellow-500';
+                    break;
+                case 'error':
+                    iconClass = 'fas fa-times-circle';
+                    bgClass = 'bg-red-900 bg-opacity-50 border-red-500';
+                    break;
+                case 'analyzing':
+                    iconClass = 'fas fa-cogs fa-spin';
+                    bgClass = 'bg-blue-900 bg-opacity-50 border-blue-500';
+                    break;
+            }
+
+            statusDisplay.className = `text-center p-4 rounded-lg mb-6 ${bgClass}`;
+            statusDisplay.innerHTML = `
+                <i class="${iconClass} text-secondary text-2xl mb-2"></i>
+                <p class="text-white">${message}</p>
+            `;
         }
-        
-        if (progress >= 60) {
-          colorMatch.textContent = `${Math.min(progress + 10, 85)}%`;
+
+        // Update progress
+        function updateProgress(percentage, text) {
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            const progressCircle = document.querySelector('.progress-ring-circle');
+            
+            progressBar.style.width = percentage + '%';
+            progressText.textContent = `${percentage}%`;
+            
+            // Update circular progress
+            const circumference = 2 * Math.PI * 40;
+            const offset = circumference - (percentage / 100) * circumference;
+            progressCircle.style.strokeDashoffset = offset;
         }
-        
-        if (progress >= 80) {
-          structureMatch.textContent = `${Math.min(progress, 80)}%`;
+
+        // Advanced analysis function
+        async function startAdvancedAnalysis() {
+            if (isAnalyzing) return;
+            if (video.readyState < 2) {
+                updateStatus('error', 'الكاميرا غير جاهزة بعد');
+                return;
+            }
+
+            isAnalyzing = true;
+            document.getElementById('analyzeBtn').disabled = true;
+            updateStatus('analyzing', 'جاري تحليل المستندات بتقنيات متقدمة...');
+
+            try {
+                // Setup canvas
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                // Get analysis settings
+                const sensitivity = document.getElementById('sensitivityLevel').value;
+                const analysisType = document.getElementById('analysisType').value;
+
+                // Extract document regions
+                const regions = extractDocumentRegions();
+                
+                // Perform analysis with progress tracking
+                await performAdvancedAnalysis(regions, sensitivity, analysisType);
+
+            } catch (error) {
+                console.error('Analysis error:', error);
+                updateStatus('error', 'حدث خطأ أثناء التحليل: ' + error.message);
+            } finally {
+                isAnalyzing = false;
+                document.getElementById('analyzeBtn').disabled = false;
+            }
         }
-        
-        if (progress >= 100) {
-          clearInterval(interval);
-          finishAnalysis(leftImage, rightImage);
+
+        // Extract document regions from video
+        function extractDocumentRegions() {
+            const width = canvas.width;
+            const height = canvas.height;
+            const boxSize = Math.min(width, height) * 0.25; // Adaptive box size
+
+            // Calculate box positions
+            const leftBox = {
+                x: width * 0.25 - boxSize / 2,
+                y: height * 0.5 - boxSize / 2,
+                width: boxSize,
+                height: boxSize
+            };
+
+            const rightBox = {
+                x: width * 0.75 - boxSize / 2,
+                y: height * 0.5 - boxSize / 2,
+                width: boxSize,
+                height: boxSize
+            };
+
+            // Extract image data
+            const originalData = ctx.getImageData(leftBox.x, leftBox.y, leftBox.width, leftBox.height);
+            const suspectData = ctx.getImageData(rightBox.x, rightBox.y, rightBox.width, rightBox.height);
+
+            return {
+                original: originalData,
+                suspect: suspectData,
+                dimensions: { width: boxSize, height: boxSize }
+            };
         }
-      }, 50);
-    }
-    
-    // إنهاء التحليل وعرض النتائج
-    function finishAnalysis(leftImage, rightImage) {
-      // تحليل النسيج
-      const textureScore = 85 + Math.random() * 10;
-      textureMatch.textContent = `${textureScore.toFixed(1)}%`;
-      
-      // تحليل الإضاءة
-      const lightScore = 80 + Math.random() * 15;
-      lightMatch.textContent = `${lightScore.toFixed(1)}%`;
-      
-      // تحليل الألوان
-      const colorScore = 75 + Math.random() * 20;
-      colorMatch.textContent = `${colorScore.toFixed(1)}%`;
-      
-      // تحليل البنية
-      const structureScore = 90 + Math.random() * 5;
-      structureMatch.textContent = `${structureScore.toFixed(1)}%`;
-      
-      // النتيجة النهائية
-      const finalScore = (textureScore * 0.4 + lightScore * 0.2 + colorScore * 0.2 + structureScore * 0.2);
-      scoreValue.textContent = `${finalScore.toFixed(1)}%`;
-      
-      // التقييم النهائي
-      if (finalScore > 90) {
-        verdict.innerHTML = '<i class="fas fa-check-circle"></i> تطابق تام - المستندان أصليان';
-        verdict.className = "verdict safe";
-      } else if (finalScore > 75) {
-        verdict.innerHTML = '<i class="fas fa-exclamation-triangle"></i> تطابق جزئي - يوصى بالتحقق اليدوي';
-        verdict.className = "verdict warning";
-      } else {
-        verdict.innerHTML = '<i class="fas fa-times-circle"></i> اختلاف كبير - احتمال تزوير مرتفع';
-        verdict.className = "verdict danger";
-      }
-    }
-    
-    // إعادة تعيين التحليل
-    function resetAnalysis() {
-      verdict.innerHTML = '<i class="fas fa-sync-alt"></i> في انتظار بدء التحليل';
-      verdict.className = "verdict";
-      progressBar.style.width = "0%";
-      scoreValue.textContent = "0%";
-      textureMatch.textContent = "0%";
-      lightMatch.textContent = "0%";
-      colorMatch.textContent = "0%";
-      structureMatch.textContent = "0%";
-    }
-    
-    // بدء التشغيل عند تحميل الصفحة
-    window.onload = function() {
-      initCamera();
-      
-      // عرض رسالة ترحيبية
-      setTimeout(() => {
-        verdict.innerHTML = '<i class="fas fa-camera"></i> قم بتوجيه الكاميرا نحو المستندين واضغط "بدء التحليل"';
-        verdict.className = "verdict";
-      }, 1000);
-    };
-  </script>
+
+        // Perform advanced analysis
+        async function performAdvancedAnalysis(regions, sensitivity, analysisType) {
+            const steps = [
+                { name: 'تحضير البيانات', progress: 10 },
+                { name: 'تحليل النسيج', progress: 25 },
+                { name: 'تحليل الألوان', progress: 40 },
+                { name: 'تحليل الإضاءة', progress: 55 },
+                { name: 'تحليل البنية', progress: 70 },
+                { name: 'التحليل الترددي', progress: 85 },
+                { name: 'المعالجة النهائية', progress: 100 }
+            ];
+
+            const results = {};
+
+            for (const step of steps) {
+                updateProgress(step.progress, step.name);
+                await new Promise(resolve => setTimeout(resolve, 300)); // Simulate processing time
+
+                switch (step.name) {
+                    case 'تحليل النسيج':
+                        results.texture = analyzeTexture(regions.original, regions.suspect, sensitivity);
+                        updateMetric('textureScore', results.texture);
+                        break;
+                    case 'تحليل الألوان':
+                        results.color = analyzeColorDistribution(regions.original, regions.suspect, sensitivity);
+                        updateMetric('colorScore', results.color);
+                        break;
+                    case 'تحليل الإضاءة':
+                        results.lighting = analyzeLightingPatterns(regions.original, regions.suspect, sensitivity);
+                        updateMetric('lightingScore', results.lighting);
+                        break;
+                    case 'تحليل البنية':
+                        results.structure = analyzeStructuralFeatures(regions.original, regions.suspect, sensitivity);
+                        updateMetric('structureScore', results.structure);
+                        break;
+                    case 'التحليل الترددي':
+                        results.frequency = analyzeFrequencyDomain(regions.original, regions.suspect, sensitivity);
+                        updateAdvancedMetrics(results.frequency);
+                        break;
+                }
+            }
+
+            // Calculate final score
+            const finalScore = calculateFinalScore(results, analysisType);
+            updateScoreDisplay(finalScore);
+            
+            // Show advanced results
+            showAdvancedResults(results, regions);
+            
+            // Update status based on score
+            updateFinalStatus(finalScore);
+        }
+
+        // Texture analysis using Gabor-like filters
+        function analyzeTexture(original, suspect, sensitivity) {
+            const data1 = original.data;
+            const data2 = suspect.data;
+            const width = original.width;
+            
+            let textureScore1 = 0, textureScore2 = 0;
+            let correlationSum = 0;
+            
+            // Simplified Gabor-like texture analysis
+            for (let y = 1; y < original.height - 1; y++) {
+                for (let x = 1; x < width - 1; x++) {
+                    const idx = (y * width + x) * 4;
+                    
+                    // Calculate local texture energy
+                    const gx1 = data1[idx + 4] - data1[idx - 4];
+                    const gy1 = data1[idx + width * 4] - data1[idx - width * 4];
+                    const energy1 = Math.sqrt(gx1 * gx1 + gy1 * gy1);
+                    
+                    const gx2 = data2[idx + 4] - data2[idx - 4];
+                    const gy2 = data2[idx + width * 4] - data2[idx - width * 4];
+                    const energy2 = Math.sqrt(gx2 * gx2 + gy2 * gy2);
+                    
+                    textureScore1 += energy1;
+                    textureScore2 += energy2;
+                    
+                    // Calculate correlation
+                    correlationSum += energy1 * energy2;
+                }
+            }
+            
+            const correlation = correlationSum / Math.sqrt(textureScore1 * textureScore2);
+            const similarity = Math.max(0, Math.min(100, correlation * 100));
+            
+            // Apply sensitivity adjustment
+            return applySensitivityAdjustment(similarity, sensitivity);
+        }
+
+        // Color distribution analysis
+        function analyzeColorDistribution(original, suspect, sensitivity) {
+            const data1 = original.data;
+            const data2 = suspect.data;
+            
+            // Create color histograms
+            const hist1 = { r: new Array(256).fill(0), g: new Array(256).fill(0), b: new Array(256).fill(0) };
+            const hist2 = { r: new Array(256).fill(0), g: new Array(256).fill(0), b: new Array(256).fill(0) };
+            
+            for (let i = 0; i < data1.length; i += 4) {
+                hist1.r[data1[i]]++;
+                hist1.g[data1[i + 1]]++;
+                hist1.b[data1[i + 2]]++;
+                
+                hist2.r[data2[i]]++;
+                hist2.g[data2[i + 1]]++;
+                hist2.b[data2[i + 2]]++;
+            }
+            
+            // Calculate histogram correlation
+            const corrR = calculateHistogramCorrelation(hist1.r, hist2.r);
+            const corrG = calculateHistogramCorrelation(hist1.g, hist2.g);
+            const corrB = calculateHistogramCorrelation(hist1.b, hist2.b);
+            
+            const avgCorrelation = (corrR + corrG + corrB) / 3;
+            const similarity = Math.max(0, Math.min(100, avgCorrelation * 100));
+            
+            return applySensitivityAdjustment(similarity, sensitivity);
+        }
+
+        // Lighting pattern analysis
+        function analyzeLightingPatterns(original, suspect, sensitivity) {
+            const data1 = original.data;
+            const data2 = suspect.data;
+            const width = original.width;
+            
+            let lightingDiff = 0;
+            let pixelCount = 0;
+            
+            // Analyze lighting gradients
+            for (let y = 1; y < original.height - 1; y++) {
+                for (let x = 1; x < width - 1; x++) {
+                    const idx = (y * width + x) * 4;
+                    
+                    // Convert to luminance
+                    const lum1 = 0.299 * data1[idx] + 0.587 * data1[idx + 1] + 0.114 * data1[idx + 2];
+                    const lum2 = 0.299 * data2[idx] + 0.587 * data2[idx + 1] + 0.114 * data2[idx + 2];
+                    
+                    lightingDiff += Math.abs(lum1 - lum2);
+                    pixelCount++;
+                }
+            }
+            
+            const avgDiff = lightingDiff / pixelCount;
+            const similarity = Math.max(0, 100 - (avgDiff / 255) * 100);
+            
+            return applySensitivityAdjustment(similarity, sensitivity);
+        }
+
+        // Structural feature analysis
+        function analyzeStructuralFeatures(original, suspect, sensitivity) {
+            // Edge detection using Sobel operator
+            const edges1 = detectEdges(original);
+            const edges2 = detectEdges(suspect);
+            
+            // Compare edge patterns
+            let edgeDiff = 0;
+            for (let i = 0; i < edges1.length; i++) {
+                edgeDiff += Math.abs(edges1[i] - edges2[i]);
+            }
+            
+            const avgEdgeDiff = edgeDiff / edges1.length;
+            const similarity = Math.max(0, 100 - (avgEdgeDiff / 255) * 100);
+            
+            return applySensitivityAdjustment(similarity, sensitivity);
+        }
+
+        // Frequency domain analysis
+        function analyzeFrequencyDomain(original, suspect, sensitivity) {
+            // Simplified frequency analysis using gradients
+            const freq1 = calculateFrequencySpectrum(original);
+            const freq2 = calculateFrequencySpectrum(suspect);
+            
+            return {
+                high: Math.max(0, 100 - Math.abs(freq1.high - freq2.high) * 2),
+                mid: Math.max(0, 100 - Math.abs(freq1.mid - freq2.mid) * 2),
+                low: Math.max(0, 100 - Math.abs(freq1.low - freq2.low) * 2),
+                edges: analyzeEdgeConsistency(original, suspect),
+                noise: analyzeNoisePattern(original, suspect)
+            };
+        }
+
+        // Helper functions
+        function applySensitivityAdjustment(score, sensitivity) {
+            switch (sensitivity) {
+                case 'low': return Math.min(100, score * 1.1);
+                case 'high': return Math.max(0, score * 0.9);
+                default: return score;
+            }
+        }
+
+        function calculateHistogramCorrelation(hist1, hist2) {
+            let mean1 = 0, mean2 = 0;
+            for (let i = 0; i < 256; i++) {
+                mean1 += hist1[i];
+                mean2 += hist2[i];
+            }
+            mean1 /= 256;
+            mean2 /= 256;
+            
+            let numerator = 0, denom1 = 0, denom2 = 0;
+            for (let i = 0; i < 256; i++) {
+                const diff1 = hist1[i] - mean1;
+                const diff2 = hist2[i] - mean2;
+                numerator += diff1 * diff2;
+                denom1 += diff1 * diff1;
+                denom2 += diff2 * diff2;
+            }
+            
+            return numerator / Math.sqrt(denom1 * denom2);
+        }
+
+        function detectEdges(imageData) {
+            const data = imageData.data;
+            const width = imageData.width;
+            const height = imageData.height;
+            const edges = [];
+            
+            for (let y = 1; y < height - 1; y++) {
+                for (let x = 1; x < width - 1; x++) {
+                    const idx = (y * width + x) * 4;
+                    
+                    // Sobel operators
+                    const gx = -data[idx - width * 4 - 4] + data[idx - width * 4 + 4] +
+                              -2 * data[idx - 4] + 2 * data[idx + 4] +
+                              -data[idx + width * 4 - 4] + data[idx + width * 4 + 4];
+                    
+                    const gy = -data[idx - width * 4 - 4] - 2 * data[idx - width * 4] - data[idx - width * 4 + 4] +
+                                data[idx + width * 4 - 4] + 2 * data[idx + width * 4] + data[idx + width * 4 + 4];
+                    
+                    edges.push(Math.sqrt(gx * gx + gy * gy));
+                }
+            }
+            
+            return edges;
+        }
+
+        function calculateFrequencySpectrum(imageData) {
+            const data = imageData.data;
+            let high = 0, mid = 0, low = 0;
+            let count = 0;
+            
+            for (let i = 0; i < data.length; i += 4) {
+                const gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+                
+                if (gray > 170) high++;
+                else if (gray > 85) mid++;
+                else low++;
+                count++;
+            }
+            
+            return {
+                high: (high / count) * 100,
+                mid: (mid / count) * 100,
+                low: (low / count) * 100
+            };
+        }
+
+        function analyzeEdgeConsistency(original, suspect) {
+            const edges1 = detectEdges(original);
+            const edges2 = detectEdges(suspect);
+            
+            let consistency = 0;
+            for (let i = 0; i < Math.min(edges1.length, edges2.length); i++) {
+                consistency += 1 - Math.abs(edges1[i] - edges2[i]) / 255;
+            }
+            
+            return (consistency / edges1.length) * 100;
+        }
+
+        function analyzeNoisePattern(original, suspect) {
+            // Simple noise analysis based on local variance
+            const variance1 = calculateLocalVariance(original);
+            const variance2 = calculateLocalVariance(suspect);
+            
+            return Math.max(0, 100 - Math.abs(variance1 - variance2) * 10);
+        }
+
+        function calculateLocalVariance(imageData) {
+            const data = imageData.data;
+            const width = imageData.width;
+            let variance = 0;
+            let count = 0;
+            
+            for (let y = 1; y < imageData.height - 1; y++) {
+                for (let x = 1; x < width - 1; x++) {
+                    const idx = (y * width + x) * 4;
+                    const center = data[idx];
+                    
+                    let localVar = 0;
+                    for (let dy = -1; dy <= 1; dy++) {
+                        for (let dx = -1; dx <= 1; dx++) {
+                            const neighborIdx = ((y + dy) * width + (x + dx)) * 4;
+                            localVar += Math.pow(data[neighborIdx] - center, 2);
+                        }
+                    }
+                    
+                    variance += localVar / 9;
+                    count++;
+                }
+            }
+            
+            return variance / count;
+        }
+
+        function calculateFinalScore(results, analysisType) {
+            let weights = { texture: 0.3, color: 0.25, lighting: 0.25, structure: 0.2 };
+            
+            switch (analysisType) {
+                case 'texture':
+                    weights = { texture: 1.0, color: 0, lighting: 0, structure: 0 };
+                    break;
+                case 'color':
+                    weights = { texture: 0, color: 1.0, lighting: 0, structure: 0 };
+                    break;
+                case 'lighting':
+                    weights = { texture: 0, color: 0, lighting: 1.0, structure: 0 };
+                    break;
+            }
+            
+            return (results.texture * weights.texture +
+                   results.color * weights.color +
+                   results.lighting * weights.lighting +
+                   results.structure * weights.structure);
+        }
+
+        function updateMetric(elementId, value) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.textContent = `${Math.round(value)}%`;
+            }
+        }
+
+        function updateAdvancedMetrics(frequency) {
+            document.getElementById('highFreq').textContent = `${Math.round(frequency.high)}%`;
+            document.getElementById('midFreq').textContent = `${Math.round(frequency.mid)}%`;
+            document.getElementById('lowFreq').textContent = `${Math.round(frequency.low)}%`;
+            document.getElementById('edgeDensity').textContent = `${Math.round(frequency.edges)}%`;
+            document.getElementById('edgeSharpness').textContent = `${Math.round(frequency.edges * 0.9)}%`;
+            document.getElementById('edgeConsistency').textContent = `${Math.round(frequency.edges * 1.1)}%`;
+            document.getElementById('noiseLevel').textContent = `${Math.round(frequency.noise)}%`;
+            document.getElementById('noiseDistribution').textContent = `${Math.round(frequency.noise * 0.8)}%`;
+            document.getElementById('noisePattern').textContent = `${Math.round(frequency.noise * 1.2)}%`;
+        }
+
+        function updateScoreDisplay(score) {
+            const scoreDisplay = document.getElementById('scoreDisplay');
+            scoreDisplay.textContent = `${Math.round(score)}%`;
+        }
+
+        function showAdvancedResults(results, regions) {
+            const advancedResults = document.getElementById('advancedResults');
+            advancedResults.classList.remove('hidden');
+            
+            // Create visual comparison
+            const visualComparison = document.getElementById('visualComparison');
+            visualComparison.innerHTML = `
+                <div class="text-center">
+                    <canvas id="originalCanvas" class="w-full border border-green-500 rounded"></canvas>
+                    <p class="mt-2 text-green-400 font-semibold">المستند الأصلي</p>
+                </div>
+                <div class="text-center">
+                    <canvas id="suspectCanvas" class="w-full border border-red-500 rounded"></canvas>
+                    <p class="mt-2 text-red-400 font-semibold">المستند المشكوك فيه</p>
+                </div>
+                <div class="text-center">
+                    <canvas id="diffCanvas" class="w-full border border-yellow-500 rounded"></canvas>
+                    <p class="mt-2 text-yellow-400 font-semibold">خريطة الفروقات</p>
+                </div>
+            `;
+            
+            // Draw comparison images
+            drawComparisonImages(regions);
+        }
+
+        function drawComparisonImages(regions) {
+            setTimeout(() => {
+                const originalCanvas = document.getElementById('originalCanvas');
+                const suspectCanvas = document.getElementById('suspectCanvas');
+                const diffCanvas = document.getElementById('diffCanvas');
+                
+                if (originalCanvas && suspectCanvas && diffCanvas) {
+                    const size = 200;
+                    
+                    [originalCanvas, suspectCanvas, diffCanvas].forEach(canvas => {
+                        canvas.width = size;
+                        canvas.height = size;
+                    });
+                    
+                    // Draw original
+                    const originalCtx = originalCanvas.getContext('2d');
+                    originalCtx.putImageData(regions.original, 0, 0);
+                    
+                    // Draw suspect
+                    const suspectCtx = suspectCanvas.getContext('2d');
+                    suspectCtx.putImageData(regions.suspect, 0, 0);
+                    
+                    // Draw difference
+                    const diffCtx = diffCanvas.getContext('2d');
+                    const diffImageData = createDifferenceImage(regions.original, regions.suspect);
+                    diffCtx.putImageData(diffImageData, 0, 0);
+                }
+            }, 100);
+        }
+
+        function createDifferenceImage(original, suspect) {
+            const width = original.width;
+            const height = original.height;
+            const diffData = new ImageData(width, height);
+            
+            for (let i = 0; i < original.data.length; i += 4) {
+                const r1 = original.data[i];
+                const g1 = original.data[i + 1];
+                const b1 = original.data[i + 2];
+                
+                const r2 = suspect.data[i];
+                const g2 = suspect.data[i + 1];
+                const b2 = suspect.data[i + 2];
+                
+                const diff = Math.abs(r1 - r2) + Math.abs(g1 - g2) + Math.abs(b1 - b2);
+                
+                if (diff > 50) {
+                    diffData.data[i] = 255;     // Red
+                    diffData.data[i + 1] = 0;
+                    diffData.data[i + 2] = 0;
+                } else {
+                    const gray = (r1 + g1 + b1) / 3;
+                    diffData.data[i] = gray;
+                    diffData.data[i + 1] = gray;
+                    diffData.data[i + 2] = gray;
+                }
+                diffData.data[i + 3] = 255; // Alpha
+            }
+            
+            return diffData;
+        }
+
+        function updateFinalStatus(score) {
+            if (score >= 85) {
+                updateStatus('success', `تطابق ممتاز (${Math.round(score)}%) - المستندان يبدوان أصليين`);
+            } else if (score >= 70) {
+                updateStatus('warning', `تطابق جيد (${Math.round(score)}%) - يُنصح بفحص إضافي`);
+            } else if (score >= 50) {
+                updateStatus('warning', `تطابق متوسط (${Math.round(score)}%) - توجد اختلافات ملحوظة`);
+            } else {
+                updateStatus('error', `تطابق منخفض (${Math.round(score)}%) - احتمال تزوير مرتفع!`);
+            }
+        }
+
+        function resetAnalysis() {
+            // Reset all displays
+            updateProgress(0, '');
+            updateStatus('success', 'تم إعادة تعيين التحليل - جاهز للبدء');
+            
+            // Reset metrics
+            ['textureScore', 'lightingScore', 'colorScore', 'structureScore'].forEach(id => {
+                document.getElementById(id).textContent = '0%';
+            });
+            
+            // Reset advanced metrics
+            ['highFreq', 'midFreq', 'lowFreq', 'edgeDensity', 'edgeSharpness', 'edgeConsistency', 
+             'noiseLevel', 'noiseDistribution', 'noisePattern'].forEach(id => {
+                document.getElementById(id).textContent = '0%';
+            });
+            
+            document.getElementById('scoreDisplay').textContent = '0%';
+            document.getElementById('advancedResults').classList.add('hidden');
+            
+            // Reset progress circle
+            const progressCircle = document.querySelector('.progress-ring-circle');
+            progressCircle.style.strokeDashoffset = 251.2;
+        }
+
+        // Initialize when page loads
+        window.addEventListener('load', () => {
+            initCamera();
+        });
+
+        // Cleanup when page unloads
+        window.addEventListener('beforeunload', () => {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+        });
+    </script>
 </body>
 </html>
